@@ -35,11 +35,13 @@ Student (Student)
 ## 🚀 Endpoints
 
 1. Students
+'''text
 GET /students – List all students
 GET /students/{id} -Get a student by Id
 POST /students - Create a student
 PUT /students/{id} - Modify name or email for a student
 DELETE /students/{id} - Delete a student by id
+'''
 
 2. Courses
 GET /courses – List all courses
