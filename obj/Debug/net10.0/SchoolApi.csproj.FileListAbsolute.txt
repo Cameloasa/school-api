@@ -31,3 +31,4 @@ C:\Projects\SchoolApi\obj\Debug\net10.0\refint\SchoolApi.dll
 C:\Projects\SchoolApi\obj\Debug\net10.0\SchoolApi.pdb
 C:\Projects\SchoolApi\obj\Debug\net10.0\SchoolApi.genruntimeconfig.cache
 C:\Projects\SchoolApi\obj\Debug\net10.0\ref\SchoolApi.dll
+C:\Projects\SchoolApi\obj\Debug\net10.0\SchoolApi.sourcelink.json

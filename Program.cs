@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Identity;
 using SchoolApi.Models;
+using SchoolApi.Models.Requests;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,15 +29,114 @@ List<Student> students = [
         new (4, "Bob Brown", "bob.brown@example.com"),
         new (5, "Charlie Davis", "charlie.davis@example.com")
     ];
-// endpoint students List of students
+//endpoint GET /students List of students
 app.MapGet("/students", () => {
     try{
-    return Results.Ok(students);
+        if (students == null)
+        {
+            return Results.Ok(new List<Student>());
+        }
+        else
+        {
+            return Results.Ok(students);
+        }
     }
-    catch(Exception){
+    catch (Exception)
+    {
         return Results.InternalServerError("An error occurred while retrieving the students.");
     }
 });
+
+//endpoint GET /students/{id} Student by id
+app.MapGet("/students/{id}", (int id) =>{
+    try{
+        Student? found = students.FirstOrDefault(s => s.Id == id);
+        if (found == null)
+        {
+            return Results.NotFound($"Student with ID {id} not found.");
+        }
+    
+        return Results.Ok(found);   
+    
+    }catch (Exception){
+        return Results.InternalServerError("An error occurred while retrieving the student.");
+    }   
+});
+
+//endpoint POST /students Create a new student
+app.MapPost("/students", (CreateStudentRequest request) =>{
+    try{
+        if (request.Id <= 0 ||
+            string.IsNullOrWhiteSpace(request.Name)||
+            string.IsNullOrWhiteSpace(request.Email))
+        {
+            return Results.BadRequest("Invalid student data.");
+        }
+
+        Student newStudent =new (request.Id, request.Name, request.Email);
+        students.Add(newStudent);
+        return Results.Created($"/students", newStudent);
+    }
+    catch (Exception){
+        return Results.InternalServerError("An error occurred while creating the student.");
+    }
+});
+
+//endpoint PUT /students/{id} Update a student by id
+app.MapPut("/students/{id}", (int id, CreateStudentRequest request) =>{
+    try{
+        // Find the student by ID
+        Student? found = students.FirstOrDefault(s => s.Id == id);
+
+        // If the student is not found, return a 404 Not Found response
+        if (found == null)
+        {
+            return Results.NotFound($"Student with ID {id} not found.");
+        }
+
+        // validate the request data if not valid return a 400 Bad Request response
+        if (request.Id <= 0 ||
+            string.IsNullOrWhiteSpace(request.Name)||
+            string.IsNullOrWhiteSpace(request.Email))
+        {
+            return Results.BadRequest("Invalid student data.");
+        }
+
+        // Update the student properties Name and Email
+        found.Name = request.Name;
+        found.Email = request.Email;
+
+        // Return the updated student
+        return Results.Ok(found);
+    }
+    catch (Exception){
+        return Results.InternalServerError("An error occurred while updating the student.");
+    }
+});
+
+//endpoint DELETE /students/{id} Delete a student by id
+app.MapDelete("/students/{id}", (int id) =>{
+    try{
+        // Find the student by ID
+        Student? found = students.FirstOrDefault(s => s.Id == id);
+
+        // If the student is not found, return a 404 Not Found response
+        if (found == null)
+        {
+            return Results.NotFound($"Student with ID {id} not found.");
+        }
+
+        // Remove the student from the list
+        students.Remove(found);
+
+        // Return 204 No Content response -no body in the response
+        return Results.NoContent();
+    }
+    catch (Exception){
+        return Results.InternalServerError("An error occurred while deleting the student.");
+    }
+});
+
 // List of courses
 List<Course> courses = [
         new (1, "Mathematics", "An introduction to mathematical concepts and techniques."),
