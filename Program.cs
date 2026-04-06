@@ -142,13 +142,22 @@ List<Course> courses = [
         new ("Physics", "A study of the fundamental principles governing the natural world."),
         new ("Chemistry", "An exploration of the properties and interactions of matter."),
         new ("Biology", "An examination of living organisms and their interactions with the environment."),
-        new ("Computer Science", "A comprehensive overview of computer systems and programming.")
+        new ("Computer Science", "A comprehensive overview of computer systems and programming."),
+        new("History", "A study of past events and civilizations."),
+        new("Geography", "An exploration of Earth's landscapes, environments, and populations."),
+        new("Philosophy", "An introduction to fundamental questions about existence, knowledge, and ethics."),
+        new("Economics", "A study of production, consumption, and distribution of resources."),
+        new("Literature", "An analysis of written works across different periods and cultures."),
+        new("Statistics", "An introduction to data analysis, probability, and statistical methods."),
+        new("Software Engineering", "Principles and practices of designing and building software systems."),
+        new("Databases", "Fundamentals of database design, SQL, and data management."),
+        new("Cybersecurity", "An overview of protecting systems, networks, and data from digital attacks.")
     ];
 
 // endpoint courses List of courses
 app.MapGet("/courses", () =>{
     
-    return courses;
+    return Results.Ok(courses);
 });
 
 // endpoint course by id
@@ -173,9 +182,69 @@ app.MapGet("/courses/{id}", (int id) =>
     return Results.Ok(course);
 });
 
+// endpoint POST /courses Create a new course
+app.MapPost("/courses", (CreateCourseRequest request) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Name) ||
+        string.IsNullOrWhiteSpace(request.Description))
+    {
+        return Results.BadRequest("Invalid course data.");
+    }
+
+    // validation to check if the course already exists by name (case-insensitive)
+    var exists = courses.Any(c => 
+        c.Name.Equals(request.Name, StringComparison.CurrentCultureIgnoreCase));
+
+    if (exists)
+    {
+        return Results.Conflict("Course already exists.");
+    }
+
+    Course newCourse = new(request.Name, request.Description);
+    courses.Add(newCourse);
+    return Results.Created($"/courses/{newCourse.Id}", newCourse);
+});
+
+// endpoint PUT /courses/{id} Update a course by id
+app.MapPut("/courses/{id}", (int id, CreateCourseRequest request) =>
+{
+    Course? found = courses.FirstOrDefault(c => c.Id == id);
+
+    if (found == null)
+    {
+        return Results.NotFound($"Course with ID {id} not found.");
+    }
+
+    if (string.IsNullOrWhiteSpace(request.Name) ||
+        string.IsNullOrWhiteSpace(request.Description))
+    {
+        return Results.BadRequest("Invalid course data.");
+    }
+
+    found.Name = request.Name;
+    found.Description = request.Description;
+
+    return Results.Ok(found);
+});
+
+// endpoint DELETE /courses/{id} Delete a course by id
+app.MapDelete("/courses/{id}", (int id) =>
+{
+    Course? found = courses.FirstOrDefault(c => c.Id == id);
+
+    if (found == null)
+    {
+        return Results.NotFound($"Course with ID {id} not found.");
+    }
+
+    courses.Remove(found);
+    return Results.NoContent();
+});
+
+
 List<CourseInstance> courseInstances = [
     new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[0], [ students[0], students[1] ]),
-    new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[1], [ students[2] ]),
+    new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[1], [ students[2], students[3] ]),
     new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[2], [ students[3], students[4] ]),
     new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[3], [ students[0], students[2] ]),
     new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[4], [ students[1], students[3] ])
@@ -184,7 +253,7 @@ List<CourseInstance> courseInstances = [
 // endpoint course-instances List of course instances
 app.MapGet("/course-instances", () =>{
    
-    return courseInstances;
+    return Results.Ok(courseInstances);
 });
 
 app.MapGet("/students/{studentId}/courses", (int studentId) =>
