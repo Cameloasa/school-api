@@ -23,11 +23,11 @@ app.UseHttpsRedirection();
 app.MapGet("/hello", () => "Hello World!");
 
 List<Student> students = [
-        new (1, "John Doe", "john.doe@example.com"),
-        new (2, "Jane Smith", "jane.smith@example.com"),
-        new (3, "Alice Johnson", "alice.johnson@example.com"),
-        new (4, "Bob Brown", "bob.brown@example.com"),
-        new (5, "Charlie Davis", "charlie.davis@example.com")
+        new ("John Doe", "john.doe@example.com"),
+        new ("Jane Smith", "jane.smith@example.com"),
+        new ("Alice Johnson", "alice.johnson@example.com"),
+        new ("Bob Brown", "bob.brown@example.com"),
+        new ("Charlie Davis", "charlie.davis@example.com")
     ];
 //endpoint GET /students List of students
 app.MapGet("/students", () => {
@@ -66,14 +66,13 @@ app.MapGet("/students/{id}", (int id) =>{
 //endpoint POST /students Create a new student
 app.MapPost("/students", (CreateStudentRequest request) =>{
     try{
-        if (request.Id <= 0 ||
-            string.IsNullOrWhiteSpace(request.Name)||
+        if (string.IsNullOrWhiteSpace(request.Name)||
             string.IsNullOrWhiteSpace(request.Email))
         {
             return Results.BadRequest("Invalid student data.");
         }
 
-        Student newStudent =new (request.Id, request.Name, request.Email);
+        Student newStudent =new ( request.Name, request.Email);
         students.Add(newStudent);
         return Results.Created($"/students", newStudent);
     }
@@ -95,7 +94,7 @@ app.MapPut("/students/{id}", (int id, CreateStudentRequest request) =>{
         }
 
         // validate the request data if not valid return a 400 Bad Request response
-        if (request.Id <= 0 ||
+        if (
             string.IsNullOrWhiteSpace(request.Name)||
             string.IsNullOrWhiteSpace(request.Email))
         {
@@ -139,11 +138,11 @@ app.MapDelete("/students/{id}", (int id) =>{
 
 // List of courses
 List<Course> courses = [
-        new (1, "Mathematics", "An introduction to mathematical concepts and techniques."),
-        new (2, "Physics", "A study of the fundamental principles governing the natural world."),
-        new (3, "Chemistry", "An exploration of the properties and interactions of matter."),
-        new (4, "Biology", "An examination of living organisms and their interactions with the environment."),
-        new (5, "Computer Science", "A comprehensive overview of computer systems and programming.")
+        new ("Mathematics", "An introduction to mathematical concepts and techniques."),
+        new ("Physics", "A study of the fundamental principles governing the natural world."),
+        new ("Chemistry", "An exploration of the properties and interactions of matter."),
+        new ("Biology", "An examination of living organisms and their interactions with the environment."),
+        new ("Computer Science", "A comprehensive overview of computer systems and programming.")
     ];
 
 // endpoint courses List of courses
@@ -168,18 +167,18 @@ app.MapGet("/courses/{id}", (int id) =>
 
     if (course == null)
     {
-        return Results.NotFound();
+        return Results.NotFound($"Course with ID {id} not found.");
     }
 
     return Results.Ok(course);
 });
 
 List<CourseInstance> courseInstances = [
-    new (1, DateTime.Now, DateTime.Now.AddMonths(3), courses[0], [ students[0], students[1] ]),
-    new (2, DateTime.Now, DateTime.Now.AddMonths(3), courses[1], [ students[2] ]),
-    new (3, DateTime.Now, DateTime.Now.AddMonths(3), courses[2], [ students[3], students[4] ]),
-    new (4, DateTime.Now, DateTime.Now.AddMonths(3), courses[3], [ students[0], students[2] ]),
-    new (5, DateTime.Now, DateTime.Now.AddMonths(3), courses[4], [ students[1], students[3] ])
+    new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[0], [ students[0], students[1] ]),
+    new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[1], [ students[2] ]),
+    new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[2], [ students[3], students[4] ]),
+    new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[3], [ students[0], students[2] ]),
+    new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[4], [ students[1], students[3] ])
 ];
 
 // endpoint course-instances List of course instances
@@ -211,18 +210,18 @@ app.MapGet("/course-instances/filter", (DateTime start, DateTime end) =>
 
 // list of grades
 List<Grade> grades = [
-    new (1, "A", courseInstances[0], students[0]),
-    new (2, "B", courseInstances[0], students[1]),
-    new (3, "A-", courseInstances[1], students[2]),
-    new (4, "B+", courseInstances[2], students[3]),
-    new (5, "A", courseInstances[2], students[4])
+    new ( "A", courseInstances[0], students[0]),
+    new ( "B", courseInstances[0], students[1]),
+    new ( "A-", courseInstances[1], students[2]),
+    new ( "B+", courseInstances[2], students[3]),
+    new ( "A", courseInstances[2], students[4])
 ];
 
 // endpoint grades List of grades
 app.MapGet("/grades", () =>
 {
    
-    return grades;
+    return Results.Ok(grades);
 });
 
 

@@ -34,28 +34,30 @@ Student (Student)
 
 ## 🚀 Endpoints
 
-1. Students
-'''text
-GET /students – List all students
-GET /students/{id} -Get a student by Id
-POST /students - Create a student
-PUT /students/{id} - Modify name or email for a student
-DELETE /students/{id} - Delete a student by id
-'''
+### Students
 
-2. Courses
-GET /courses – List all courses
-GET /courses/{id} – Get a specific course by ID
+- **GET /students** – List all students
+- **GET /students/{id}** – Get a student by Id
+- **POST /students** – Create a student
+- **PUT /students/{id}** – Modify name or email for a student
+- **DELETE /students/{id}** – Delete a student by id
 
-3. Course Instances
-GET /course-instances – List all course sessions
-GET /students/{studentId}/courses – Get all courses for a specific student
-GET /course-instances/filter?start={start}&end={end} – Filter course sessions by date range
+### Courses
 
-4. Grades
-GET /grades – List all grades
-GET /students/{studentId}/grades – List all grades for a specific student
-GET /students/{studentId}/course-instances/{courseInstanceId}/grade – Get the grade for a student in a specific course session
+- **GET /courses** – List all courses
+- **GET /courses/{id}** – Get a specific course by ID
+
+### Course Instances
+
+- **GET /course-instances** – List all course sessions
+- **GET /students/{studentId}/courses** – Get all courses for a specific student
+- **GET /course-instances/filter?start={start}&end={end}** – Filter course sessions by date range
+
+### Grades
+
+- **GET /grades** – List all grades
+- **GET /students/{studentId}/grades** – List all grades for a specific student
+- **GET /students/{studentId}/course-instances/{courseInstanceId}/grade** – Get the grade for a student in a specific course session
 
 ## 🛠 How to Run
 

@@ -1,12 +1,13 @@
 namespace SchoolApi.Models;
 
     public class CourseInstance(
-        int id, 
-        DateTime startDate, 
-        DateTime endDate, 
-        Course course, 
-        List<Student> students){
-        public int Id { get; set; } = id;
+                            DateTime startDate, 
+                            DateTime endDate, 
+                            Course course, 
+                            List<Student> students){
+
+        private static int _counter = 1;
+        public int Id { get; private set; } = _counter++;
         public DateTime StartDate { get; set; } = startDate;
         public DateTime EndDate { get; set; } = endDate;
         public Course Course { get; set; } = course;
