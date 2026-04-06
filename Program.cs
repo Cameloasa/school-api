@@ -243,32 +243,162 @@ app.MapDelete("/courses/{id}", (int id) =>
 
 
 List<CourseInstance> courseInstances = [
-    new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[0], [ students[0], students[1] ]),
-    new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[1], [ students[2], students[3] ]),
-    new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[2], [ students[3], students[4] ]),
-    new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[3], [ students[0], students[2] ]),
-    new ( DateTime.Now, DateTime.Now.AddMonths(3), courses[4], [ students[1], students[3] ])
+    new CourseInstance(DateTime.Now.AddMonths(1).Date, DateTime.Now.AddMonths(3).Date, courses[0], [students[0], students[1]]),
+    new CourseInstance(DateTime.Now.AddMonths(2).Date, DateTime.Now.AddMonths(4).Date, courses[1], [students[2], students[3]]),
+    new CourseInstance(DateTime.Now.AddMonths(1).Date, DateTime.Now.AddMonths(3).Date, courses[2], [students[3], students[4]]),
+    new CourseInstance(DateTime.Now.AddMonths(1).Date, DateTime.Now.AddMonths(4).Date, courses[3], [students[0], students[2]]),
+    new CourseInstance(DateTime.Now.AddMonths(2).Date, DateTime.Now.AddMonths(4).Date, courses[4], [students[1], students[3]]),
 ];
 
 // endpoint course-instances List of course instances
-app.MapGet("/course-instances", () =>{
+app.MapGet("/courseinstances", () =>{
    
     return Results.Ok(courseInstances);
 });
 
-app.MapGet("/students/{studentId}/courses", (int studentId) =>
+app.MapGet("/courseinstances/{id}", (int id) =>
 {
+    CourseInstance? courseInstance = null;
+
+    for (int i = 0; i < courseInstances.Count; i++)
+    {
+        if (courseInstances[i].Id == id)
+        {
+            courseInstance = courseInstances[i];
+            break;
+        }
+    }
+
+    if (courseInstance == null)
+    {
+        return Results.NotFound($"Course instance with ID {id} not found.");
+    }
+
+    return Results.Ok(courseInstance);
+});
+
+// endpoint course-instances by student id List of course instances for a specific student
+app.MapGet("/students/{studentId}/courseinstances", (int studentId) =>
+{
+
     var result = courseInstances
         .Where(ci => ci.Students.Any(s => s.Id == studentId))
-        .Select(ci => ci.Course)
+        .Select(ci => new 
+        {
+            ci.Id,
+            StartDate = ci.StartDate.ToString("yyyy-MM-dd"),
+            EndDate = ci.EndDate.ToString("yyyy-MM-dd"),
+            ci.Course,
+            ci.Students
+        })
         .ToList();
 
-    return result;
+    return Results.Ok(result);
+});
+
+// endpoint POST /courseinstances Create a new course instance
+app.MapPost("/courseinstances", (CreateCourseInstancesRequest request) =>
+{
+    //validate start and end date
+    if (request.StartDate >= request.EndDate)
+    {
+        return Results.BadRequest("Start date must be before end date.");
+    }
+
+    //validate start and end date fields 
+    if (request.StartDate == default || request.EndDate == default)
+    {
+        return Results.BadRequest("StartDate and EndDate are required.");
+    }
+
+    var course = courses.FirstOrDefault(c => c.Id == request.CourseId);
+    if (course == null)
+    {
+        return Results.BadRequest($"Course with ID {request.CourseId} not found.");
+    }
+
+    var studentsInCourseInstance = students.Where(s => request.StudentIds.Contains(s.Id)).ToList();
+    if (studentsInCourseInstance.Count != request.StudentIds.Count)
+    {
+        return Results.BadRequest("One or more student IDs are invalid.");
+    }
+
+    // validation to check if the course instance already exists for the same course and overlapping dates
+    bool duplicateExists = courseInstances.Any(ci =>
+    ci.Course.Id == request.CourseId &&
+    ci.Students.Any(s => request.StudentIds.Contains(s.Id)) &&
+    ci.StartDate == request.StartDate &&
+    ci.EndDate == request.EndDate
+);
+
+    if (duplicateExists)
+    {
+        return Results.BadRequest("A course instance with the same course and overlapping dates already exists.");
+    }
+
+    CourseInstance newCourseInstance = new(request.StartDate, request.EndDate, course, studentsInCourseInstance);
+    courseInstances.Add(newCourseInstance);
+    return Results.Created($"/course-instances/{newCourseInstance.Id}", newCourseInstance);
+});
+
+// endpoint PUT /courseinstances/{id} Update a course instance by id
+app.MapPut("/courseinstances/{id}", (int id, CreateCourseInstancesRequest request) =>
+{
+
+    var courseInstance = courseInstances.FirstOrDefault(ci => ci.Id == id);
+    if (courseInstance == null)
+    {
+        return Results.NotFound($"Course instance with ID {id} not found.");
+    }
+
+    //validate start and end date
+    if (request.StartDate >= request.EndDate)
+    {
+        return Results.BadRequest("Start date must be before end date.");
+    }
+
+    //validate start and end date fields 
+    if (request.StartDate == default || request.EndDate == default)
+    {
+        return Results.BadRequest("StartDate and EndDate are required.");
+    }
+
+    var course = courses.FirstOrDefault(c => c.Id == request.CourseId);
+    if (course == null)
+    {
+        return Results.BadRequest($"Course with ID {request.CourseId} not found.");
+    }
+
+    var studentsInCourseInstance = students.Where(s => request.StudentIds.Contains(s.Id)).ToList();
+    if (studentsInCourseInstance.Count != request.StudentIds.Count)
+    {
+        return Results.BadRequest("One or more student IDs are invalid.");
+    }
+
+    courseInstance.StartDate = request.StartDate;
+    courseInstance.EndDate = request.EndDate;
+    courseInstance.Course = course;
+    courseInstance.Students = studentsInCourseInstance;
+
+    return Results.Ok(courseInstance);
+});
+
+// endpoint DELETE /courseinstances/{id} Delete a course instance by id
+app.MapDelete("/courseinstances/{id}", (int id) =>
+{
+    var courseInstance = courseInstances.FirstOrDefault(ci => ci.Id == id);
+    if (courseInstance == null)
+    {
+        return Results.NotFound($"Course instance with ID {id} not found.");
+    }
+
+    courseInstances.Remove(courseInstance);
+    return Results.NoContent();
 });
 
 // endpoint course-instances/filter List of course instances filtered by start and end date
 // example: /course-instances/filter?start=2024-01-01&end=2024-12-31
-app.MapGet("/course-instances/filter", (DateTime start, DateTime end) =>
+app.MapGet("/courseinstances/filter", (DateTime start, DateTime end) =>
 {
     var result = courseInstances
         .Where(ci => ci.StartDate >= start && ci.EndDate <= end)

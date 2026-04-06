@@ -1,15 +1,34 @@
 namespace SchoolApi.Models;
 
-    public class CourseInstance(
-                            DateTime startDate, 
-                            DateTime endDate, 
-                            Course course, 
-                            List<Student> students){
+    public class CourseInstance
+{
+    private static int _counter = 1;
+    
+    public int Id { get; private set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public Course Course { get; set; }
+    public List<Student> Students { get; set; }
 
-        private static int _counter = 1;
-        public int Id { get; private set; } = _counter++;
-        public DateTime StartDate { get; set; } = startDate;
-        public DateTime EndDate { get; set; } = endDate;
-        public Course Course { get; set; } = course;
-        public List<Student> Students { get; set; } = students;
+    public CourseInstance(DateTime startDate, DateTime endDate, Course course, List<Student> students)
+    {
+        Id = _counter++;
+    
+    // Date validation (StartDate and EndDate are required)
+    if (startDate == default || endDate == default)
+    {
+        throw new ArgumentException("Start date and end date are required.");
     }
+
+    // Validate that StartDate is before EndDate
+    if (startDate >= endDate)
+    {
+        throw new ArgumentException("Start date must be before end date.");
+    }
+
+    StartDate = startDate;
+    EndDate = endDate;
+    Course = course;
+    Students = students;
+    }
+}
