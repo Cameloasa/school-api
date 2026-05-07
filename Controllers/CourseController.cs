@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SchoolApi.Models;
 using SchoolApi.Models.Requests;
+using SchoolApi.Services;
 
 [ApiController]
 [Route("[controller]")]
