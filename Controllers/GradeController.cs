@@ -6,7 +6,7 @@ using SchoolApi.Services;
 namespace SchoolApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("grades")]
 public class GradeController : ControllerBase
 {
     private readonly IGradeService _gradeService;
@@ -16,7 +16,7 @@ public class GradeController : ControllerBase
         _gradeService = gradeService;
     }
 
-    // GET: api/grades
+    // GET: /grades
     [HttpGet]
     public ActionResult<List<Grade>> GetAll()
     {
@@ -31,7 +31,7 @@ public class GradeController : ControllerBase
         }
     }
 
-    // GET: api/grades/{id}
+    // GET: /grades/{id}
     [HttpGet("{id}")]
     public ActionResult<Grade> GetById(int id)
     {
@@ -50,7 +50,7 @@ public class GradeController : ControllerBase
         }
     }
 
-    // GET: api/grades/student/{studentId}
+    // GET: /grades/student/{studentId}
     [HttpGet("student/{studentId}")]
     public ActionResult<List<Grade>> GetByStudent(int studentId)
     {
@@ -69,7 +69,7 @@ public class GradeController : ControllerBase
         }
     }
 
-    // GET: api/grades/course-instance/{courseInstanceId}
+    // GET: /grades/course-instance/{courseInstanceId}
     [HttpGet("course-instance/{courseInstanceId}")]
     public ActionResult<List<Grade>> GetByCourseInstance(int courseInstanceId)
     {
@@ -88,7 +88,7 @@ public class GradeController : ControllerBase
         }
     }
 
-    // GET: api/grades/student/{studentId}/course-instance/{courseInstanceId}
+    // GET: /grades/student/{studentId}/course-instance/{courseInstanceId}
     [HttpGet("student/{studentId}/course-instance/{courseInstanceId}")]
     public ActionResult<Grade> GetByStudentAndCourseInstance(int studentId, int courseInstanceId)
     {
@@ -107,7 +107,7 @@ public class GradeController : ControllerBase
         }
     }
 
-    // POST: api/grades
+    // POST: /grades
     [HttpPost]
     public ActionResult<Grade> Create([FromBody] CreateGradeRequest request)
     {
@@ -130,7 +130,7 @@ public class GradeController : ControllerBase
         }
     }
 
-    // PUT: api/grades/{id}
+    // PUT: /grades/{id}
     [HttpPut("{id}")]
     public ActionResult<Grade> Update(int id, [FromBody] UpdateGradeRequest request)
     {
@@ -153,7 +153,7 @@ public class GradeController : ControllerBase
         }
     }
 
-    // DELETE: api/grades/{id}
+    // DELETE: /grades/{id}
     [HttpDelete("{id}")]
     public ActionResult Delete(int id)
     {

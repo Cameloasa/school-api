@@ -4,7 +4,7 @@ using SchoolApi.Models.Requests;
 using SchoolApi.Services;
 
 [ApiController]
-[Route("[controller]")]
+[Route("courses")]
 
 public class CourseController(ICourseService service) : ControllerBase
 {
@@ -18,7 +18,7 @@ public class CourseController(ICourseService service) : ControllerBase
     }
 
     [HttpGet]
-    [Route("/{id}")]
+    [Route("{id}")]
     public ActionResult<Course?> GetCourseById(int id)
     {
         try

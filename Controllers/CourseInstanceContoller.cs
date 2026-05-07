@@ -3,7 +3,7 @@ using SchoolApi.Models;
 using SchoolApi.Models.Requests;
 
 [ApiController]
-[Route("[controller]")]
+[Route("course-instances")]
 public class CourseInstanceController(ICourseInstanceService courseInstanceService):ControllerBase
 {
     private readonly ICourseInstanceService _courseInstanceService = courseInstanceService;
@@ -15,7 +15,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
     }
 
     [HttpGet]
-    [Route("/{id}")]
+    [Route("{id}")]
     public ActionResult<CourseInstance?> GetCourseInstance(int id)
     {
         try{
@@ -51,7 +51,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
     }
 
     [HttpPatch]
-    [Route("/{id}")]
+    [Route("{id}")]
     public ActionResult<CourseInstance?> UpdateCourseInstance(int id, [FromBody]CreateCourseInstancesRequest request)
     {
         try
@@ -74,7 +74,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
     }
 
     [HttpDelete]
-    [Route("/{id}")]
+    [Route("{id}")]
     public ActionResult DeleteCourseInstance(int id)
     {
         try
@@ -94,7 +94,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
     }
 
     [HttpGet]
-    [Route("/by-student/{studentId}")] 
+    [Route("by-student/{studentId}")] 
     public ActionResult<IEnumerable<CourseInstance>> GetByStudent(int studentId)
     {
         try
@@ -115,7 +115,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
     }   
 
     [HttpGet]
-    [Route("/by-course/{courseId}")]
+    [Route("by-course/{courseId}")]
     public ActionResult<IEnumerable<CourseInstance>> GetByCourse(int courseId)
     {
         try

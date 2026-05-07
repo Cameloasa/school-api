@@ -4,7 +4,7 @@ using SchoolApi.Models.Requests;
 using SchoolApi.Services;
 
 [ApiController]
-[Route("[controller]")]
+[Route("students")]
 public class StudentController(IStudentService service):ControllerBase
 {
     private readonly IStudentService _service = service;
@@ -16,7 +16,7 @@ public class StudentController(IStudentService service):ControllerBase
     }
 
     [HttpGet]
-    [Route("/{id}")]
+    [Route("{id}")]
     public ActionResult<Student?> GetStudentById(int id)
 
     {
