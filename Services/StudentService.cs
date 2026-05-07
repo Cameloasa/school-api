@@ -3,7 +3,7 @@ using SchoolApi.Models;
 using SchoolApi.Models.Requests;
 
 
-public interface IStudentservice{
+public interface IStudentService{
     List<Student> GetStudents();
     Student? GetStudentById(int id);
     Student CreateStudent(CreateStudentRequest request);
@@ -11,7 +11,7 @@ public interface IStudentservice{
     bool DeleteStudent(int id);
 }
 
-public class StudentService: IStudentservice
+public class StudentService: IStudentService
 {
     //Global students list
     List<Student> students = [
@@ -31,7 +31,7 @@ public class StudentService: IStudentservice
     //get students by Id
     public Student? GetStudentById(int id)
     {
-        Student? found = students.FirstOrDefault(s => s.Id == id);
+        Student? found = students.FirstOrDefault(s => s.StudentId == id);
         return found;
     }
 
@@ -46,7 +46,7 @@ public class StudentService: IStudentservice
     //update student by Id
     public Student? UpdateStudent(int id, CreateStudentRequest request)
     {
-        Student? found = students.FirstOrDefault(s => s.Id == id);
+        Student? found = students.FirstOrDefault(s => s.StudentId == id);
         if(found == null)
         {
             return null;
@@ -59,7 +59,7 @@ public class StudentService: IStudentservice
     //delete student
     public bool DeleteStudent(int id)
     {
-        Student? found = students.FirstOrDefault(s => s.Id == id);
+        Student? found = students.FirstOrDefault(s => s.StudentId == id);
         if(found == null)
         {
             return false;

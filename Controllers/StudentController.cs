@@ -5,9 +5,9 @@ using SchoolApi.Services;
 
 [ApiController]
 [Route("[controller]")]
-public class StudentController(IStudentservice service):ControllerBase
+public class StudentController(IStudentService service):ControllerBase
 {
-    private readonly IStudentservice _service = service;
+    private readonly IStudentService _service = service;
 
     [HttpGet]
     public ActionResult<List<Student>> GetStudents()
