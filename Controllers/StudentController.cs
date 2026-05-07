@@ -89,4 +89,6 @@ public class StudentController(IStudentService service):ControllerBase
             return StatusCode(500,"An error occured while processing the request ");
         }
     }
+
+    
 }
