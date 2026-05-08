@@ -64,17 +64,17 @@ public class StudentService : IStudentService
             // Validations
             if (request.Equals(default(CreateStudentRequest)))
             {
-                throw new ArgumentException("Request cannot be null");
+                throw new ArgumentException("Request cannot be empty");
             }
-            
+            //name validation
             if (string.IsNullOrWhiteSpace(request.Name))
             {
                 throw new ArgumentException("Name is required");
             }
-            
-            if (string.IsNullOrWhiteSpace(request.Email))
+            //email validation
+            if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains("@"))
             {
-                throw new ArgumentException("Email is required");
+                throw new ArgumentException("Valid email is required");
             }
             
             Student newStudent = new(request.Name, request.Email);

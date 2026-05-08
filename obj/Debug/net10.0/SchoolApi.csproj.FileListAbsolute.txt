@@ -16,6 +16,7 @@ C:\Projects\SchoolApi\obj\Debug\net10.0\SchoolApi.AssemblyInfo.cs
 C:\Projects\SchoolApi\obj\Debug\net10.0\SchoolApi.csproj.CoreCompileInputs.cache
 C:\Projects\SchoolApi\obj\Debug\net10.0\SchoolApi.MvcApplicationPartsAssemblyInfo.cs
 C:\Projects\SchoolApi\obj\Debug\net10.0\SchoolApi.MvcApplicationPartsAssemblyInfo.cache
+C:\Projects\SchoolApi\obj\Debug\net10.0\SchoolApi.sourcelink.json
 C:\Projects\SchoolApi\obj\Debug\net10.0\rjimswa.dswa.cache.json
 C:\Projects\SchoolApi\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 C:\Projects\SchoolApi\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
@@ -31,4 +32,3 @@ C:\Projects\SchoolApi\obj\Debug\net10.0\refint\SchoolApi.dll
 C:\Projects\SchoolApi\obj\Debug\net10.0\SchoolApi.pdb
 C:\Projects\SchoolApi\obj\Debug\net10.0\SchoolApi.genruntimeconfig.cache
 C:\Projects\SchoolApi\obj\Debug\net10.0\ref\SchoolApi.dll
-C:\Projects\SchoolApi\obj\Debug\net10.0\SchoolApi.sourcelink.json

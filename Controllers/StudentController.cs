@@ -44,6 +44,10 @@ public class StudentController(IStudentService service):ControllerBase
             Student newStudent = _service.CreateStudent(request);
             return Created("/students", newStudent);
         }
+        catch(ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
         catch(Exception)
         {
             return StatusCode(500,"An error occured while processing the request ");
