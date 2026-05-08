@@ -13,25 +13,23 @@ public interface IStudentService{
 
 public class StudentService: IStudentService
 {
-    //Global students list
-    List<Student> students = [
-        new ("John Doe", "john.doe@example.com"),
-        new ("Jane Smith", "jane.smith@example.com"),
-        new ("Alice Johnson", "alice.johnson@example.com"),
-        new ("Bob Brown", "bob.brown@example.com"),
-        new ("Charlie Davis", "charlie.davis@example.com")
-    ];
+    
+    private readonly IStudentRepository _studentRepository;
 
+    public StudentService(IStudentRepository repo)
+    {
+        _studentRepository = repo;
+    }
     // get all students
     public List<Student> GetStudents()
     {
-        return students;
+        return (List<Student>)_studentRepository.GetAllStudents();
     }
 
     //get students by Id
     public Student? GetStudentById(string id)
     {
-        Student? found = students.FirstOrDefault(s => s.StudentId == id);
+        Student? found = _studentRepository.GetStudentById(id);
         return found;
     }
 
@@ -39,14 +37,17 @@ public class StudentService: IStudentService
     public Student CreateStudent(CreateStudentRequest request)
     {
         Student newStudent = new(request.Name, request.Email);
-        students.Add(newStudent);
+        bool success = _studentRepository.AddStudent(newStudent);
+        if (!success)        {
+            throw new Exception("Failed to create student");
+        }
         return newStudent;
     }
 
     //update student by Id
     public Student? UpdateStudent(string id, CreateStudentRequest request)
     {
-        Student? found = students.FirstOrDefault(s => s.StudentId == id);
+        Student? found = _studentRepository.GetStudentById(id);
         if(found == null)
         {
             return null;
@@ -59,12 +60,11 @@ public class StudentService: IStudentService
     //delete student
     public bool DeleteStudent(string id)
     {
-        Student? found = students.FirstOrDefault(s => s.StudentId == id);
+        Student? found = _studentRepository.GetStudentById(id);
         if(found == null)
         {
             return false;
         }
-        students.Remove(found);
         return true;
     }
 
