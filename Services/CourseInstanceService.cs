@@ -78,21 +78,13 @@ public class CourseInstanceService : ICourseInstanceService
                 throw new ArgumentException("Start date must be before end date");
             }
 
-            Course? course = _courseRepository.GetCourseById(request.CourseId);
-            if (course == null)
-            {
-                throw new ArgumentException($"Course with ID {request.CourseId} not found");
-            }
+            Course? course = _courseRepository.GetCourseById(request.CourseId) ?? throw new ArgumentException($"Course with ID {request.CourseId} not found");
 
             // Validate students
-            List<Student> students = new List<Student>();
+            List<Student> students = [];
             foreach (string studentId in request.StudentId)
             {
-                Student? student = _studentRepository.GetStudentById(studentId);
-                if (student == null)
-                {
-                    throw new ArgumentException($"Student with ID {studentId} not found");
-                }
+                Student? student = _studentRepository.GetStudentById(studentId) ?? throw new ArgumentException($"Student with ID {studentId} not found");
                 students.Add(student);
             }
 
@@ -132,21 +124,13 @@ public class CourseInstanceService : ICourseInstanceService
                 return null;
             }
 
-            Course? course = _courseRepository.GetCourseById(request.CourseId);
-            if (course == null)
-            {
-                throw new ArgumentException($"Course with ID {request.CourseId} not found");
-            }
+            Course? course = _courseRepository.GetCourseById(request.CourseId) ?? throw new ArgumentException($"Course with ID {request.CourseId} not found");
 
             // Validate students
-            List<Student> students = new List<Student>();
+            List<Student> students = [];
             foreach (string studentId in request.StudentId)
             {
-                Student? student = _studentRepository.GetStudentById(studentId);
-                if (student == null)
-                {
-                    throw new ArgumentException($"Student with ID {studentId} not found");
-                }
+                Student? student = _studentRepository.GetStudentById(studentId) ?? throw new ArgumentException($"Student with ID {studentId} not found");
                 students.Add(student);
             }
 

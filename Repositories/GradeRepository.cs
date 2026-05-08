@@ -4,7 +4,7 @@ namespace SchoolApi.Repositories;
 
 public interface IGradeRepository
 {
-    // CRUD de bază
+    // CRUD 
     bool AddGrade(Grade grade);
     Grade? GetGradeById(string id);
     IEnumerable<Grade> GetAllGrades();
@@ -14,62 +14,73 @@ public interface IGradeRepository
     // Search specific
     IEnumerable<Grade> GetGradesByStudentId(string studentId);      
     IEnumerable<Grade> GetGradesByCourseInstanceId(string courseInstanceId);  
-    Grade? GetGradeByStudentAndCourse(string studentId, string courseInstanceId);  
-    
-    // For updating just the grade value
-    bool UpdateGradeValue(string studentId, string courseInstanceId, string newValue);
+    Grade? GetGradeByStudentAndCourseInstanceId(string studentId, string courseInstanceId);  
 }
 
 public class GradeRepository : IGradeRepository
 {
+    private List<Grade> grades;
+
+    public GradeRepository()
+    {
+        grades = [];// grades = new List<Grade>(); empty list
+    }
+
     public bool AddGrade(Grade grade)
     {
-        throw new NotImplementedException();
+        if (grade == null) return false;
+        grades.Add(grade); 
+        return true;
     }
 
     public bool DeleteGrade(string id)
     {
-        throw new NotImplementedException();
+        var existing = GetGradeById(id);
+        if (existing == null) return false;
+        return grades.Remove(existing);
     }
 
     public IEnumerable<Grade> GetAllGrades()
     {
-        throw new NotImplementedException();
+        return grades;
     }
 
     public Grade? GetGradeById(string id)
     {
-        throw new NotImplementedException();
+        return grades.FirstOrDefault(g => g.GradeId == id);
     }
 
-    public Grade? GetGradeByStudentAndCourse(string studentId, string courseInstanceId)
+    // Search student + course instance
+    public Grade? GetGradeByStudentAndCourseInstanceId(string studentId, string courseInstanceId)
     {
-        throw new NotImplementedException();
+        return grades.FirstOrDefault(g => g.Student?.StudentId == studentId && 
+                                         g.CourseInstance?.CourseInstanceId == courseInstanceId);
     }
 
-    public Grade? GetGradeByStudentId(string studentId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IEnumerable<Grade> GetGradesByCourseInstanceId(string courseInstanceId)
-    {
-        throw new NotImplementedException();
-    }
-
+    // all grades for a student
     public IEnumerable<Grade> GetGradesByStudentId(string studentId)
     {
-        throw new NotImplementedException();
+        return grades.Where(g => g.Student?.StudentId == studentId);
     }
 
+    // all grades for a course instance
+    public IEnumerable<Grade> GetGradesByCourseInstanceId(string courseInstanceId)
+    {
+        return grades.Where(g => g.CourseInstance?.CourseInstanceId == courseInstanceId);
+    }
+
+    // Update
     public Grade? UpdateGrade(Grade grade)
     {
-        throw new NotImplementedException();
-    }
-
-    public bool UpdateGradeValue(string studentId, string courseInstanceId, string newValue)
-    {
-        throw new NotImplementedException();
+        if (grade == null) return null;
+        
+        var existing = GetGradeById(grade.GradeId);
+        if (existing == null) return null;
+        
+        existing.Value = grade.Value;
+        existing.Student = grade.Student;
+        existing.CourseInstance = grade.CourseInstance;
+        
+        return existing;
     }
 }
-

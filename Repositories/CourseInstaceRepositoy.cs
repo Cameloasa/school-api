@@ -25,7 +25,7 @@ public class CourseInstanceRepository : ICourseInstanceRepository
     // Constructor to initialize the repository with some sample data
     public CourseInstanceRepository()
     {
-        courseInstances = new List<CourseInstance>();
+        courseInstances = [];
     }
 
     // Add a new course instance
