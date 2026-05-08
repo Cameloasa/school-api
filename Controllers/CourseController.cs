@@ -44,6 +44,10 @@ public class CourseController(ICourseService service) : ControllerBase
             Course newCourse = _service.CreateCourse(request);
             return Created("/courses", newCourse);
         }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
         catch (Exception)
         {
             return StatusCode(500,"An error occured while processing the request");

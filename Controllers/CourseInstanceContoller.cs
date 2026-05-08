@@ -5,14 +5,14 @@ using SchoolApi.Services;
 
 [ApiController]
 [Route("course-instances")]
-public class CourseInstanceController(ICourseInstanceService courseInstanceService):ControllerBase
+public class CourseInstanceController(ICourseInstanceService service):ControllerBase
 {
-    private readonly ICourseInstanceService _courseInstanceService = courseInstanceService;
+    private readonly ICourseInstanceService _service = service;
 
     [HttpGet]
     public ActionResult<List<CourseInstance>> GetCourseInstances()
     {
-        return Ok(_courseInstanceService.GetCourseInstances());
+        return Ok(_service.GetCourseInstances());
     }
 
     [HttpGet]
@@ -20,7 +20,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
     public ActionResult<CourseInstance?> GetCourseInstance(string id)
     {
         try{
-            CourseInstance? found = _courseInstanceService.GetById(id);
+            CourseInstance? found = _service.GetCourseInstanceById(id);
             if (found == null)
             {
                 return NotFound($"Course instance with id {id} not found");
@@ -38,8 +38,8 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
     {
         try
         {
-            CourseInstance newCourseInstance = _courseInstanceService.CreateCourseInstance(request);
-            return Created("/courseinstances", newCourseInstance);
+            CourseInstance newCourseInstance = _service.CreateCourseInstance(request);
+            return Created("/course-instances", newCourseInstance);
         }
         catch (ArgumentException ex)
         {
@@ -57,7 +57,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
     {
         try
         {
-            CourseInstance? updatedCourseInstance = _courseInstanceService.UpdateCourseInstance(id, request);
+            CourseInstance? updatedCourseInstance = _service.UpdateCourseInstance(id, request);
             if (updatedCourseInstance == null)
             {
                 return NotFound($"Course instance with id {id} not found");
@@ -80,12 +80,12 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
     {
         try
         {
-            CourseInstance? found = _courseInstanceService.GetById(id);
+            CourseInstance? found = _service.GetCourseInstanceById(id);
             if (found == null)
             {
                 return NotFound($"Course instance with id {id} not found");
             }
-            _courseInstanceService.DeleteCourseInstance(id);
+            _service.DeleteCourseInstance(id);
             return Ok();
         }
         catch (Exception)
@@ -100,7 +100,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
     {
         try
         {
-            IEnumerable<CourseInstance> found = _courseInstanceService.GetByStudent(studentId);
+            IEnumerable<CourseInstance> found = _service.GetByStudent(studentId);
             
             if (found == null || !found.Any())
             {
@@ -121,7 +121,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
     {
         try
         {
-            IEnumerable<CourseInstance> found = _courseInstanceService.GetByCourse(courseId);
+            IEnumerable<CourseInstance> found = _service.GetByCourse(courseId);
             
             if (found == null || !found.Any())
             {

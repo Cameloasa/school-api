@@ -12,7 +12,13 @@ public class StudentController(IStudentService service):ControllerBase
     [HttpGet]
     public ActionResult<List<Student>> GetStudents()
     {
+        try{
         return Ok(_service.GetStudents());
+        }
+        catch(Exception)
+        {
+            return StatusCode(500,"An error occured while processing the request");
+        }
     }
 
     [HttpGet]

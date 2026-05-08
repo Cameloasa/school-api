@@ -6,10 +6,10 @@ namespace SchoolApi.Services;
 
 public interface IGradeService
 {
-    List<Grade> GetGrades();
+    IEnumerable<Grade> GetGrades();  // ← schimbat în IEnumerable
     Grade? GetGradeById(string id);
-    List<Grade> GetGradesByStudent(string studentId);
-    List<Grade> GetGradesByCourseInstance(string courseInstanceId);
+    IEnumerable<Grade> GetGradesByStudent(string studentId);
+    IEnumerable<Grade> GetGradesByCourseInstance(string courseInstanceId);
     Grade? GetGradeByStudentAndCourseInstance(string studentId, string courseInstanceId);
     Grade CreateGrade(CreateGradeRequest request);
     Grade? UpdateGrade(string id, UpdateGradeRequest request);
@@ -31,8 +31,7 @@ public class GradeService : IGradeService
         _gradeRepository = gradeRepo;
     }
 
-
-    public List<Grade> GetGrades()
+    public IEnumerable<Grade> GetGrades()  // ← schimbat
     {
         try
         {
@@ -49,9 +48,8 @@ public class GradeService : IGradeService
         try
         {
             if (string.IsNullOrWhiteSpace(id))
-            {
                 throw new ArgumentException("Grade ID cannot be empty");
-            }
+            
             return _gradeRepository.GetGradeById(id);
         }
         catch (ArgumentException)
@@ -64,14 +62,13 @@ public class GradeService : IGradeService
         }
     }
 
-    public List<Grade> GetGradesByStudent(string studentId)
+    public IEnumerable<Grade> GetGradesByStudent(string studentId)  // ← schimbat
     {
         try
         {
             if (string.IsNullOrWhiteSpace(studentId))
-            {
                 throw new ArgumentException("Student ID cannot be empty");
-            }
+            
             return _gradeRepository.GetGradesByStudentId(studentId).ToList();
         }
         catch (ArgumentException)
@@ -84,15 +81,13 @@ public class GradeService : IGradeService
         }
     }
 
-
-    public List<Grade> GetGradesByCourseInstance(string courseInstanceId)
+    public IEnumerable<Grade> GetGradesByCourseInstance(string courseInstanceId)  // ← schimbat
     {
         try
         {
             if (string.IsNullOrWhiteSpace(courseInstanceId))
-            {
                 throw new ArgumentException("Course instance ID cannot be empty");
-            }
+            
             return _gradeRepository.GetGradesByCourseInstanceId(courseInstanceId).ToList();
         }
         catch (ArgumentException)
@@ -110,9 +105,8 @@ public class GradeService : IGradeService
         try
         {
             if (string.IsNullOrWhiteSpace(studentId) || string.IsNullOrWhiteSpace(courseInstanceId))
-            {
                 throw new ArgumentException("Student ID and course instance ID cannot be empty");
-            }
+            
             return _gradeRepository.GetGradeByStudentAndCourseInstanceId(studentId, courseInstanceId);
         }
         catch (ArgumentException)
@@ -121,7 +115,7 @@ public class GradeService : IGradeService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"An error occurred while retrieving the grade for student ID {studentId} and course instance ID {courseInstanceId}", ex);
+            throw new InvalidOperationException($"An error occurred while retrieving the grade", ex);
         }
     }
 
@@ -129,27 +123,26 @@ public class GradeService : IGradeService
     {
         try
         {
-            // Validations
             if (string.IsNullOrWhiteSpace(request.StudentId))
                 throw new ArgumentException("Student ID is required");
             
             if (string.IsNullOrWhiteSpace(request.CourseInstanceId))
                 throw new ArgumentException("Course instance ID is required");
             
+            var validGrades = new List<string> { "A", "B", "C", "D", "E", "F" };
             if (string.IsNullOrWhiteSpace(request.Value))
                 throw new ArgumentException("Grade value is required");
+            if (!validGrades.Contains(request.Value.ToUpper()))
+                throw new ArgumentException("Grade must be one of the valid values: A, B, C, D, E, F");
 
-            // Find student and course instance
             Student? student = _studentRepository.GetStudentById(request.StudentId) 
                 ?? throw new ArgumentException($"Student with ID {request.StudentId} not found");
             
             CourseInstance? courseInstance = _courseInstanceRepository.GetCourseInstanceById(request.CourseInstanceId) 
                 ?? throw new ArgumentException($"Course instance with ID {request.CourseInstanceId} not found");
             
-            // Create grade
             Grade grade = new(request.Value, courseInstance, student);
             
-            // Save grade
             bool success = _gradeRepository.AddGrade(grade);
             if (!success)
                 throw new InvalidOperationException("Failed to add grade");
@@ -165,6 +158,7 @@ public class GradeService : IGradeService
             throw new InvalidOperationException("An error occurred while creating the grade", ex);
         }
     }
+
     public Grade? UpdateGrade(string id, UpdateGradeRequest request)
     {
         try
@@ -176,7 +170,8 @@ public class GradeService : IGradeService
                 throw new ArgumentException("Request cannot be null");
             
             Grade? existingGrade = _gradeRepository.GetGradeById(id);
-            if (existingGrade == null) return null;
+            if (existingGrade == null) 
+                return null;
 
             if (!string.IsNullOrWhiteSpace(request.Value))
             {
@@ -212,5 +207,5 @@ public class GradeService : IGradeService
         {
             throw new InvalidOperationException($"An error occurred while deleting the grade with ID {id}", ex);
         }
-        }
-}    
+    }
+}

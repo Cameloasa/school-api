@@ -7,23 +7,15 @@ namespace SchoolApi.Controllers;
 
 [ApiController]
 [Route("grades")]
-public class GradeController : ControllerBase
+public class GradeController(IGradeService service) : ControllerBase
 {
-    private readonly IGradeService _gradeService;
-
-    public GradeController(IGradeService gradeService)
-    {
-        _gradeService = gradeService;
-    }
-
     // GET: /grades
     [HttpGet]
-    public ActionResult<List<Grade>> GetAll()
+    public ActionResult<IEnumerable<Grade>> GetAllGrades()
     {
         try
         {
-            var grades = _gradeService.GetGrades();
-            return Ok(grades);
+            return Ok(service.GetGrades());
         }
         catch (Exception ex)
         {
@@ -33,11 +25,11 @@ public class GradeController : ControllerBase
 
     // GET: /grades/{id}
     [HttpGet("{id}")]
-    public ActionResult<Grade> GetById(string id)
+    public ActionResult<Grade?> GetById(string id)
     {
         try
         {
-            var grade = _gradeService.GetGradeById(id);
+            Grade? grade = service.GetGradeById(id);
             if (grade == null)
             {
                 return NotFound($"Grade with ID {id} not found");
@@ -52,11 +44,11 @@ public class GradeController : ControllerBase
 
     // GET: /grades/student/{studentId}
     [HttpGet("student/{studentId}")]
-    public ActionResult<List<Grade>> GetByStudent(string studentId)
+    public ActionResult<IEnumerable<Grade>> GetByStudent(string studentId)
     {
         try
         {
-            var grades = _gradeService.GetGradesByStudent(studentId);
+            var grades = service.GetGradesByStudent(studentId);
             if (!grades.Any())
             {
                 return NotFound($"No grades found for student with ID {studentId}");
@@ -71,11 +63,11 @@ public class GradeController : ControllerBase
 
     // GET: /grades/course-instance/{courseInstanceId}
     [HttpGet("course-instance/{courseInstanceId}")]
-    public ActionResult<List<Grade>> GetByCourseInstance(string courseInstanceId)
+    public ActionResult<IEnumerable<Grade>> GetByCourseInstance(string courseInstanceId)
     {
         try
         {
-            var grades = _gradeService.GetGradesByCourseInstance(courseInstanceId);
+            var grades = service.GetGradesByCourseInstance(courseInstanceId);
             if (!grades.Any())
             {
                 return NotFound($"No grades found for course instance with ID {courseInstanceId}");
@@ -94,7 +86,7 @@ public class GradeController : ControllerBase
     {
         try
         {
-            var grade = _gradeService.GetGradeByStudentAndCourseInstance(studentId, courseInstanceId);
+            var grade = service.GetGradeByStudentAndCourseInstance(studentId, courseInstanceId);
             if (grade == null)
             {
                 return NotFound($"Grade not found for student {studentId} and course instance {courseInstanceId}");
@@ -109,12 +101,12 @@ public class GradeController : ControllerBase
 
     // POST: /grades
     [HttpPost]
-    public ActionResult<Grade> Create([FromBody] CreateGradeRequest request)
+    public ActionResult<Grade?> Create([FromBody] CreateGradeRequest request)
     {
         try
         {
-            var grade = _gradeService.CreateGrade(request);
-            return CreatedAtAction(nameof(GetById), new { id = grade.GradeId }, grade);
+            Grade? newGrade = service.CreateGrade(request);
+            return Created("/grades", newGrade);
         }
         catch (ArgumentException ex)
         {
@@ -130,13 +122,13 @@ public class GradeController : ControllerBase
         }
     }
 
-    // PUT: /grades/{id}
-    [HttpPut("{id}")]
+    // PATCH: /grades/{id}
+    [HttpPatch("{id}")]
     public ActionResult<Grade> Update(string id, [FromBody] UpdateGradeRequest request)
     {
         try
         {
-            var updated = _gradeService.UpdateGrade(id, request);
+            var updated = service.UpdateGrade(id, request);
             if (updated == null)
             {
                 return NotFound($"Grade with ID {id} not found");
@@ -159,7 +151,7 @@ public class GradeController : ControllerBase
     {
         try
         {
-            var deleted = _gradeService.DeleteGrade(id);
+            var deleted = service.DeleteGrade(id);
             if (!deleted)
             {
                 return NotFound($"Grade with ID {id} not found");

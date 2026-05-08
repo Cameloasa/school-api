@@ -6,7 +6,7 @@ namespace SchoolApi.Services;
 public interface ICourseInstanceService
 {
     List<CourseInstance> GetCourseInstances();
-    CourseInstance? GetById(string id);
+    CourseInstance? GetCourseInstanceById(string id);
     CourseInstance CreateCourseInstance(CreateCourseInstancesRequest request);
     CourseInstance? UpdateCourseInstance(string id, CreateCourseInstancesRequest request);
     bool DeleteCourseInstance(string id);
@@ -45,7 +45,7 @@ public class CourseInstanceService : ICourseInstanceService
     }
 
     //get course instance by id
-    public CourseInstance? GetById(string id)
+    public CourseInstance? GetCourseInstanceById(string id)
     {
         try
         {
@@ -72,24 +72,40 @@ public class CourseInstanceService : ICourseInstanceService
 
         try
         {
-            // Validations
+            // Validations date
+            if (request.StartDate < DateTime.Now.Date)
+            {
+                throw new ArgumentException("Start date must be in the future");
+            }
             if (request.StartDate >= request.EndDate)
             {
                 throw new ArgumentException("Start date must be before end date");
             }
+            if(request.EndDate < DateTime.Now)
+            {
+                throw new ArgumentException("End date must be in the future");
+            }
 
-            Course? course = _courseRepository.GetCourseById(request.CourseId) ?? throw new ArgumentException($"Course with ID {request.CourseId} not found");
+            // Validate course
+            Course? course = _courseRepository.GetCourseById(request.CourseId) ?? 
+            throw new ArgumentException($"Course with ID {request.CourseId} not found");
 
             // Validate students
             List<Student> students = [];
             foreach (string studentId in request.StudentId)
             {
-                Student? student = _studentRepository.GetStudentById(studentId) ?? throw new ArgumentException($"Student with ID {studentId} not found");
+                Student? student = _studentRepository.GetStudentById(studentId) 
+                ?? throw new ArgumentException($"Student with ID {studentId} not found");
                 students.Add(student);
             }
 
-            CourseInstance newInstance = new (request.StartDate, request.EndDate, course,students);
+            CourseInstance newInstance = new (request.StartDate, 
+                                                request.EndDate, 
+                                                course,
+                                                students);
+            // Save to repository
             _courseInstanceRepository.AddCourseInstance(newInstance);
+            // Return the created instance
             return newInstance;
         }
         catch (ArgumentException)
