@@ -1,6 +1,7 @@
 namespace SchoolApi.Services;
 using SchoolApi.Models;
 using SchoolApi.Models.Requests;
+using SchoolApi.Repositories;
 
 public interface IStudentService{
     List<Student> GetStudents();

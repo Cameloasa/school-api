@@ -1,6 +1,7 @@
 using SchoolApi.Models;
 using SchoolApi.Models.Requests;
-using SchoolApi.Services;
+using SchoolApi.Repositories;
+namespace SchoolApi.Services;
 
 public interface ICourseInstanceService
 {
@@ -11,152 +12,196 @@ public interface ICourseInstanceService
     bool DeleteCourseInstance(string id);
     IEnumerable<CourseInstance> GetByStudent(string studentId); 
     IEnumerable<CourseInstance> GetByCourse(string courseId); 
+    IEnumerable<CourseInstance> GetByDateRange(DateTime start, DateTime end);
 }
 
 public class CourseInstanceService : ICourseInstanceService
 {
-    private readonly IStudentService _studentService;
-    private readonly ICourseService _courseService;
-    private List<CourseInstance> courseInstances = new List<CourseInstance>();
+    private readonly IStudentRepository _studentRepository;
+    private readonly ICourseRepository _courseRepository;
+    private readonly ICourseInstanceRepository _courseInstanceRepository;
 
-    public CourseInstanceService(IStudentService studentService, ICourseService courseService)
+    public CourseInstanceService(IStudentRepository studentRepo, 
+                                ICourseRepository courseRepo,
+                                ICourseInstanceRepository courseInstanceRepo)
     {
-        _studentService = studentService;
-        _courseService = courseService;
+        _studentRepository = studentRepo;
+        _courseRepository = courseRepo;
+        _courseInstanceRepository = courseInstanceRepo;
         
-        InitializeCourseInstances();
     }
 
-    private void InitializeCourseInstances()
-    {
-
-        var students = _studentService.GetStudents();
-        var courses = _courseService.GetCourses();
-        
-        if (students.Count >= 2 && courses.Count >= 1)
-        {
-            courseInstances = new List<CourseInstance>
-            {
-                new CourseInstance(
-                    DateTime.Now.AddMonths(1).Date, 
-                    DateTime.Now.AddMonths(3).Date, 
-                    courses[0], 
-                    new List<Student> { students[0], students[1] }
-                ),
-                new CourseInstance(
-                    DateTime.Now.AddMonths(2).Date, 
-                    DateTime.Now.AddMonths(4).Date, 
-                    courses[1 % courses.Count], 
-                    new List<Student> { students[2], students[3] }
-                ),
-                new CourseInstance(
-                    DateTime.Now.AddMonths(1).Date, 
-                    DateTime.Now.AddMonths(3).Date, 
-                    courses[2 % courses.Count],
-                    new List<Student> { students[3], students[4 % students.Count] }
-                ),
-            };
-        }
-    }
-
+    //get all course instances
     public List<CourseInstance> GetCourseInstances()
     {
-        return courseInstances;
+        try
+        {
+            return _courseInstanceRepository.GetAllCourseInstances().ToList();
+        }
+        catch (Exception ex)    
+        {
+            throw new InvalidOperationException("An error occurred while retrieving course instances", ex);   
+        }
     }
 
+    //get course instance by id
     public CourseInstance? GetById(string id)
     {
-        return courseInstances.FirstOrDefault(i => i.CourseInstanceId == id);
+        try
+        {
+            // Validation
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentException("Course instance ID cannot be empty");
+            }
+            return _courseInstanceRepository.GetCourseInstanceById(id);
+        }
+        catch (ArgumentException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"An error occurred while retrieving course instance with ID {id}", ex);
+        }
     }
 
+    //create course instance
     public CourseInstance CreateCourseInstance(CreateCourseInstancesRequest request)
     {
-        
-        Course? course = _courseService.GetCourseById(request.CourseId);
-        if (course == null)
-        {
-            throw new ArgumentException($"Course with ID {request.CourseId} not found");
-        }
 
-        
-        List<Student> students = new List<Student>();
-        foreach (string studentId in request.StudentId)
+        try
         {
-            Student? student = _studentService.GetStudentById(studentId);
-            if (student == null)
+            // Validations
+            if (request.StartDate >= request.EndDate)
             {
-                throw new ArgumentException($"Student with ID {studentId} not found");
+                throw new ArgumentException("Start date must be before end date");
             }
-            students.Add(student);
+
+            Course? course = _courseRepository.GetCourseById(request.CourseId);
+            if (course == null)
+            {
+                throw new ArgumentException($"Course with ID {request.CourseId} not found");
+            }
+
+            // Validate students
+            List<Student> students = new List<Student>();
+            foreach (string studentId in request.StudentId)
+            {
+                Student? student = _studentRepository.GetStudentById(studentId);
+                if (student == null)
+                {
+                    throw new ArgumentException($"Student with ID {studentId} not found");
+                }
+                students.Add(student);
+            }
+
+            CourseInstance newInstance = new (request.StartDate, request.EndDate, course,students);
+            _courseInstanceRepository.AddCourseInstance(newInstance);
+            return newInstance;
         }
-
-    
-        CourseInstance newCourseInstance = new CourseInstance(
-            request.StartDate,
-            request.EndDate,
-            course,
-            students
-        );
-
-        courseInstances.Add(newCourseInstance);
-        return newCourseInstance;
+        catch (ArgumentException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("An error occurred while creating the course instance", ex);
+        }
     }
 
+    //update course instance
     public CourseInstance? UpdateCourseInstance(string id, CreateCourseInstancesRequest request)
     {
-        CourseInstance? existing = GetById(id);
-        if (existing == null)
+        try
         {
-            return null;
-        }
-
-        if (request.StartDate >= request.EndDate)
-        {
-            throw new ArgumentException("Start date must be before end date");
-        }
-
-        Course? course = _courseService.GetCourseById(request.CourseId);
-        if (course == null)
-        {
-            throw new ArgumentException($"Course with ID {request.CourseId} not found");
-        }
-
-        List<Student> students = new List<Student>();
-        foreach (string studentId in request.StudentId)
-        {
-            Student? student = _studentService.GetStudentById(studentId);
-            if (student == null)
+            // Validations
+            if (string.IsNullOrWhiteSpace(id))
             {
-                throw new ArgumentException($"Student with ID {studentId} not found");
+                throw new ArgumentException("Course instance ID cannot be empty");
             }
-            students.Add(student);
+            
+            if (request.StartDate >= request.EndDate)
+            {
+                throw new ArgumentException("Start date must be before end date");
+            }
+
+            CourseInstance? existing = _courseInstanceRepository.GetCourseInstanceById(id);
+            if (existing == null)
+            {
+                return null;
+            }
+
+            Course? course = _courseRepository.GetCourseById(request.CourseId);
+            if (course == null)
+            {
+                throw new ArgumentException($"Course with ID {request.CourseId} not found");
+            }
+
+            // Validate students
+            List<Student> students = new List<Student>();
+            foreach (string studentId in request.StudentId)
+            {
+                Student? student = _studentRepository.GetStudentById(studentId);
+                if (student == null)
+                {
+                    throw new ArgumentException($"Student with ID {studentId} not found");
+                }
+                students.Add(student);
+            }
+
+            existing.StartDate = request.StartDate;
+            existing.EndDate = request.EndDate;
+            existing.Course = course;
+            existing.Students = students;
+
+            return _courseInstanceRepository.UpdateCourseInstance(existing);
         }
-
-        existing.StartDate = request.StartDate;
-        existing.EndDate = request.EndDate;
-        existing.Course = course;
-        existing.Students = students;
-
-        return existing;
+        catch (ArgumentException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"An error occurred while updating course instance with ID {id}", ex);
+        }
     }
-
+    //delete course instance
     public bool DeleteCourseInstance(string id)
     {
-        CourseInstance? existing = GetById(id);
-        if (existing == null)
+        try
         {
-            return false;
+            // Validation
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentException("Course instance ID cannot be empty");
+            }
+            
+            return _courseInstanceRepository.DeleteCourseInstance(id);
         }
-        return courseInstances.Remove(existing);
+        catch (ArgumentException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"An error occurred while deleting course instance with ID {id}", ex);
+        }
     }
 
+    //get course instances by student id
     public IEnumerable<CourseInstance> GetByStudent(string studentId)
     {
-        return courseInstances.Where(c => c.Students.Any(s => s.StudentId == studentId));
+        return _courseInstanceRepository.GetByStudentId(studentId);
     }
 
     public IEnumerable<CourseInstance> GetByCourse(string courseId)
     {
-        return courseInstances.Where(c => c.Course.CourseId == courseId);
+        return _courseInstanceRepository.GetByCourseId(courseId);
+    }
+
+    public IEnumerable<CourseInstance> GetByDateRange(DateTime start, DateTime end)
+    {
+        return _courseInstanceRepository.GetByDateRange(start, end);
     }
 }

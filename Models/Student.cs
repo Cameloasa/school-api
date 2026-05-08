@@ -7,7 +7,16 @@ public class Student
     public string Name { get; set; }
     public string Email { get; set; }
 
-    // Constructor 1: for create (generates new ID)
+    // Default constructor for deserialization
+    public Student()
+    {
+        StudentId = Guid.NewGuid().ToString();
+        Name = string.Empty;
+        Email = string.Empty;
+    }
+
+    
+    // Constructor 1: for create (generates new ID) 
     public Student(string name, string email)
     {
         StudentId = Guid.NewGuid().ToString();

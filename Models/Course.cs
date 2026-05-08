@@ -6,6 +6,14 @@ public class Course{
     public string Name { get; set; } 
     public string Description { get; set; } 
 
+    // Default constructor for deserialization
+    public Course()
+    {
+        CourseId = Guid.NewGuid().ToString();
+        Name = string.Empty;
+        Description = string.Empty;
+    }
+    
     // Constructor 1: for create (generates new ID)
     public Course(string name, string description)
     {
