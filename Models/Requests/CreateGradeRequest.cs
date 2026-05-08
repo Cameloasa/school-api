@@ -3,8 +3,8 @@ namespace SchoolApi.Models.Requests;
 public class CreateGradeRequest
 {
     public required string Value { get; set; }
-    public int CourseInstanceId { get; set; }
-    public int StudentId { get; set; }
+    public string CourseInstanceId { get; set; }
+    public string StudentId { get; set; }
 }
 
 public class UpdateGradeRequest

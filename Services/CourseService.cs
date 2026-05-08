@@ -6,10 +6,10 @@ using SchoolApi.Models.Requests;
 public interface ICourseService
 {
     List<Course> GetCourses();
-    Course? GetCourseById(int id);
+    Course? GetCourseById(string id);
     Course CreateCourse(CreateCourseRequest request);
-    Course? UpdateCourse(int id, CreateCourseRequest request);
-    bool DeleteCourse(int id);
+    Course? UpdateCourse(string id, CreateCourseRequest request);
+    bool DeleteCourse(string id);
 }
 
 public class CourseService : ICourseService
@@ -37,7 +37,7 @@ List<Course> courses = [
         return courses;
     }
 
-    public Course? GetCourseById(int id)
+    public Course? GetCourseById(string id)
     {
         Course? found = courses.FirstOrDefault(c => c.CourseId == id);
         return found;
@@ -50,7 +50,7 @@ List<Course> courses = [
         return newCourse;
     }
 
-    public Course? UpdateCourse(int id, CreateCourseRequest request)
+    public Course? UpdateCourse(string id, CreateCourseRequest request)
     {
         Course? found = courses.FirstOrDefault(c => c.CourseId == id);
         if(found == null)
@@ -63,7 +63,7 @@ List<Course> courses = [
         return found;
     }
 
-    public bool DeleteCourse(int id)
+    public bool DeleteCourse(string id)
     {
         Course? found = courses.FirstOrDefault(c => c.CourseId == id);
         if(found == null)

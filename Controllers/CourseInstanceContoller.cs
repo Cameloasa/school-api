@@ -16,7 +16,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
 
     [HttpGet]
     [Route("{id}")]
-    public ActionResult<CourseInstance?> GetCourseInstance(int id)
+    public ActionResult<CourseInstance?> GetCourseInstance(string id)
     {
         try{
             CourseInstance? found = _courseInstanceService.GetById(id);
@@ -52,7 +52,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
 
     [HttpPatch]
     [Route("{id}")]
-    public ActionResult<CourseInstance?> UpdateCourseInstance(int id, [FromBody]CreateCourseInstancesRequest request)
+    public ActionResult<CourseInstance?> UpdateCourseInstance(string id, [FromBody]CreateCourseInstancesRequest request)
     {
         try
         {
@@ -75,7 +75,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
 
     [HttpDelete]
     [Route("{id}")]
-    public ActionResult DeleteCourseInstance(int id)
+    public ActionResult DeleteCourseInstance(string id)
     {
         try
         {
@@ -95,7 +95,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
 
     [HttpGet]
     [Route("by-student/{studentId}")] 
-    public ActionResult<IEnumerable<CourseInstance>> GetByStudent(int studentId)
+    public ActionResult<IEnumerable<CourseInstance>> GetByStudent(string studentId)
     {
         try
         {
@@ -116,7 +116,7 @@ public class CourseInstanceController(ICourseInstanceService courseInstanceServi
 
     [HttpGet]
     [Route("by-course/{courseId}")]
-    public ActionResult<IEnumerable<CourseInstance>> GetByCourse(int courseId)
+    public ActionResult<IEnumerable<CourseInstance>> GetByCourse(string courseId)
     {
         try
         {

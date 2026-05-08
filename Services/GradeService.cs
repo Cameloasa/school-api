@@ -6,13 +6,13 @@ namespace SchoolApi.Services;
 public interface IGradeService
 {
     List<Grade> GetGrades();
-    Grade? GetGradeById(int id);
-    List<Grade> GetGradesByStudent(int studentId);
-    List<Grade> GetGradesByCourseInstance(int courseInstanceId);
-    Grade? GetGradeByStudentAndCourseInstance(int studentId, int courseInstanceId);
+    Grade? GetGradeById(string id);
+    List<Grade> GetGradesByStudent(string studentId);
+    List<Grade> GetGradesByCourseInstance(string courseInstanceId);
+    Grade? GetGradeByStudentAndCourseInstance(string studentId, string courseInstanceId);
     Grade CreateGrade(CreateGradeRequest request);
-    Grade? UpdateGrade(int id, UpdateGradeRequest request);
-    bool DeleteGrade(int id);
+    Grade? UpdateGrade(string id, UpdateGradeRequest request);
+    bool DeleteGrade(string id);
 }
 
 public class GradeService : IGradeService
@@ -53,22 +53,22 @@ public class GradeService : IGradeService
         return _grades;
     }
 
-    public Grade? GetGradeById(int id)
+    public Grade? GetGradeById(string id)
     {
         return _grades.FirstOrDefault(g => g.GradeId == id);
     }
 
-    public List<Grade> GetGradesByStudent(int studentId)
+    public List<Grade> GetGradesByStudent(string studentId)
     {
         return _grades.Where(g => g.Student.StudentId == studentId).ToList();
     }
 
-    public List<Grade> GetGradesByCourseInstance(int courseInstanceId)
+    public List<Grade> GetGradesByCourseInstance(string courseInstanceId)
     {
         return _grades.Where(g => g.CourseInstance.CourseInstanceId == courseInstanceId).ToList();
     }
 
-    public Grade? GetGradeByStudentAndCourseInstance(int studentId, int courseInstanceId)
+    public Grade? GetGradeByStudentAndCourseInstance(string studentId, string courseInstanceId)
     {
         return _grades.FirstOrDefault(g => 
             g.Student.StudentId == studentId && 
@@ -115,7 +115,7 @@ public class GradeService : IGradeService
         return newGrade;
     }
 
-    public Grade? UpdateGrade(int id, UpdateGradeRequest request)
+    public Grade? UpdateGrade(string id, UpdateGradeRequest request)
     {
         var grade = GetGradeById(id);
         if (grade == null)
@@ -132,7 +132,7 @@ public class GradeService : IGradeService
         return grade;
     }
 
-    public bool DeleteGrade(int id)
+    public bool DeleteGrade(string id)
     {
         var grade = GetGradeById(id);
         if (grade == null)

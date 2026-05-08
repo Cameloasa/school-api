@@ -5,12 +5,12 @@ using SchoolApi.Services;
 public interface ICourseInstanceService
 {
     List<CourseInstance> GetCourseInstances();
-    CourseInstance? GetById(int id);
+    CourseInstance? GetById(string id);
     CourseInstance CreateCourseInstance(CreateCourseInstancesRequest request);
-    CourseInstance? UpdateCourseInstance(int id, CreateCourseInstancesRequest request);
-    bool DeleteCourseInstance(int id);
-    IEnumerable<CourseInstance> GetByStudent(int studentId); 
-    IEnumerable<CourseInstance> GetByCourse(int courseId); 
+    CourseInstance? UpdateCourseInstance(string id, CreateCourseInstancesRequest request);
+    bool DeleteCourseInstance(string id);
+    IEnumerable<CourseInstance> GetByStudent(string studentId); 
+    IEnumerable<CourseInstance> GetByCourse(string courseId); 
 }
 
 public class CourseInstanceService : ICourseInstanceService
@@ -64,7 +64,7 @@ public class CourseInstanceService : ICourseInstanceService
         return courseInstances;
     }
 
-    public CourseInstance? GetById(int id)
+    public CourseInstance? GetById(string id)
     {
         return courseInstances.FirstOrDefault(i => i.CourseInstanceId == id);
     }
@@ -80,7 +80,7 @@ public class CourseInstanceService : ICourseInstanceService
 
         
         List<Student> students = new List<Student>();
-        foreach (int studentId in request.StudentId)
+        foreach (string studentId in request.StudentId)
         {
             Student? student = _studentService.GetStudentById(studentId);
             if (student == null)
@@ -102,7 +102,7 @@ public class CourseInstanceService : ICourseInstanceService
         return newCourseInstance;
     }
 
-    public CourseInstance? UpdateCourseInstance(int id, CreateCourseInstancesRequest request)
+    public CourseInstance? UpdateCourseInstance(string id, CreateCourseInstancesRequest request)
     {
         CourseInstance? existing = GetById(id);
         if (existing == null)
@@ -122,7 +122,7 @@ public class CourseInstanceService : ICourseInstanceService
         }
 
         List<Student> students = new List<Student>();
-        foreach (int studentId in request.StudentId)
+        foreach (string studentId in request.StudentId)
         {
             Student? student = _studentService.GetStudentById(studentId);
             if (student == null)
@@ -140,7 +140,7 @@ public class CourseInstanceService : ICourseInstanceService
         return existing;
     }
 
-    public bool DeleteCourseInstance(int id)
+    public bool DeleteCourseInstance(string id)
     {
         CourseInstance? existing = GetById(id);
         if (existing == null)
@@ -150,12 +150,12 @@ public class CourseInstanceService : ICourseInstanceService
         return courseInstances.Remove(existing);
     }
 
-    public IEnumerable<CourseInstance> GetByStudent(int studentId)
+    public IEnumerable<CourseInstance> GetByStudent(string studentId)
     {
         return courseInstances.Where(c => c.Students.Any(s => s.StudentId == studentId));
     }
 
-    public IEnumerable<CourseInstance> GetByCourse(int courseId)
+    public IEnumerable<CourseInstance> GetByCourse(string courseId)
     {
         return courseInstances.Where(c => c.Course.CourseId == courseId);
     }

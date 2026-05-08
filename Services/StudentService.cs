@@ -5,10 +5,10 @@ using SchoolApi.Models.Requests;
 
 public interface IStudentService{
     List<Student> GetStudents();
-    Student? GetStudentById(int id);
+    Student? GetStudentById(string id);
     Student CreateStudent(CreateStudentRequest request);
-    Student? UpdateStudent(int id, CreateStudentRequest request);
-    bool DeleteStudent(int id);
+    Student? UpdateStudent(string id, CreateStudentRequest request);
+    bool DeleteStudent(string id);
 }
 
 public class StudentService: IStudentService
@@ -29,7 +29,7 @@ public class StudentService: IStudentService
     }
 
     //get students by Id
-    public Student? GetStudentById(int id)
+    public Student? GetStudentById(string id)
     {
         Student? found = students.FirstOrDefault(s => s.StudentId == id);
         return found;
@@ -44,7 +44,7 @@ public class StudentService: IStudentService
     }
 
     //update student by Id
-    public Student? UpdateStudent(int id, CreateStudentRequest request)
+    public Student? UpdateStudent(string id, CreateStudentRequest request)
     {
         Student? found = students.FirstOrDefault(s => s.StudentId == id);
         if(found == null)
@@ -57,7 +57,7 @@ public class StudentService: IStudentService
     }
 
     //delete student
-    public bool DeleteStudent(int id)
+    public bool DeleteStudent(string id)
     {
         Student? found = students.FirstOrDefault(s => s.StudentId == id);
         if(found == null)

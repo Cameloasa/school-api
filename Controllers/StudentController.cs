@@ -17,7 +17,7 @@ public class StudentController(IStudentService service):ControllerBase
 
     [HttpGet]
     [Route("{id}")]
-    public ActionResult<Student?> GetStudentById(int id)
+    public ActionResult<Student?> GetStudentById(string id)
 
     {
         try{
@@ -52,7 +52,7 @@ public class StudentController(IStudentService service):ControllerBase
 
     [HttpPatch]
     [Route("{id}")]
-    public ActionResult<Student?> UpdateStudent(int id, [FromBody]CreateStudentRequest request)
+    public ActionResult<Student?> UpdateStudent(string id, [FromBody]CreateStudentRequest request)
     {
         try
         {
@@ -71,7 +71,7 @@ public class StudentController(IStudentService service):ControllerBase
 
     [HttpDelete]
     [Route("{id}")]
-    public ActionResult DeleteStudent(int id)
+    public ActionResult DeleteStudent(string id)
     {
         try
         {

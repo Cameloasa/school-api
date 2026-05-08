@@ -33,7 +33,7 @@ public class GradeController : ControllerBase
 
     // GET: /grades/{id}
     [HttpGet("{id}")]
-    public ActionResult<Grade> GetById(int id)
+    public ActionResult<Grade> GetById(string id)
     {
         try
         {
@@ -52,7 +52,7 @@ public class GradeController : ControllerBase
 
     // GET: /grades/student/{studentId}
     [HttpGet("student/{studentId}")]
-    public ActionResult<List<Grade>> GetByStudent(int studentId)
+    public ActionResult<List<Grade>> GetByStudent(string studentId)
     {
         try
         {
@@ -71,7 +71,7 @@ public class GradeController : ControllerBase
 
     // GET: /grades/course-instance/{courseInstanceId}
     [HttpGet("course-instance/{courseInstanceId}")]
-    public ActionResult<List<Grade>> GetByCourseInstance(int courseInstanceId)
+    public ActionResult<List<Grade>> GetByCourseInstance(string courseInstanceId)
     {
         try
         {
@@ -90,7 +90,7 @@ public class GradeController : ControllerBase
 
     // GET: /grades/student/{studentId}/course-instance/{courseInstanceId}
     [HttpGet("student/{studentId}/course-instance/{courseInstanceId}")]
-    public ActionResult<Grade> GetByStudentAndCourseInstance(int studentId, int courseInstanceId)
+    public ActionResult<Grade> GetByStudentAndCourseInstance(string studentId, string courseInstanceId)
     {
         try
         {
@@ -132,7 +132,7 @@ public class GradeController : ControllerBase
 
     // PUT: /grades/{id}
     [HttpPut("{id}")]
-    public ActionResult<Grade> Update(int id, [FromBody] UpdateGradeRequest request)
+    public ActionResult<Grade> Update(string id, [FromBody] UpdateGradeRequest request)
     {
         try
         {
@@ -155,7 +155,7 @@ public class GradeController : ControllerBase
 
     // DELETE: /grades/{id}
     [HttpDelete("{id}")]
-    public ActionResult Delete(int id)
+    public ActionResult Delete(string id)
     {
         try
         {

@@ -19,7 +19,7 @@ public class CourseController(ICourseService service) : ControllerBase
 
     [HttpGet]
     [Route("{id}")]
-    public ActionResult<Course?> GetCourseById(int id)
+    public ActionResult<Course?> GetCourseById(string id)
     {
         try
         {
@@ -52,7 +52,7 @@ public class CourseController(ICourseService service) : ControllerBase
 
     [HttpPatch]
     [Route("{id}")]
-    public ActionResult<Course> UpdateCourse(int id, [FromBody]CreateCourseRequest request)
+    public ActionResult<Course> UpdateCourse(string id, [FromBody]CreateCourseRequest request)
     {
         try
         {
@@ -71,7 +71,7 @@ public class CourseController(ICourseService service) : ControllerBase
 
     [HttpDelete]
     [Route("{id}")]
-    public ActionResult DeleteCourse(int id)
+    public ActionResult DeleteCourse(string id)
     {
         try
         {
