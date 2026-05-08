@@ -74,3 +74,32 @@ Open your browser or Postman and test the endpoints, for example:
 This project uses in-memory lists for all data, so all data is reset every time the application restarts.
 Designed for learning purposes to practice C# classes, lists, LINQ, and building simple REST APIs.
 Endpoints return JSON objects that include nested data (e.g., course instances include course and students).
+
+text´´
+GET    http://localhost:5149/students
+GET    http://localhost:5149/students/5
+POST   http://localhost:5149/students
+PATCH  http://localhost:5149/students/5
+DELETE http://localhost:5149/students/5
+
+GET    http://localhost:5149/courses
+GET    http://localhost:5149/courses/5
+POST   http://localhost:5149/courses
+PATCH  http://localhost:5149/courses/5
+DELETE http://localhost:5149/courses/5
+
+GET    http://localhost:5149/course-instances
+GET    http://localhost:5149/course-instances/5
+GET    http://localhost:5149/course-instances/by-student/5
+GET    http://localhost:5149/course-instances/by-course/2
+POST   http://localhost:5149/course-instances
+PATCH  http://localhost:5149/course-instances/5
+DELETE http://localhost:5149/course-instances/5
+
+GET    http://localhost:5149/grades
+GET    http://localhost:5149/grades/5
+GET    http://localhost:5149/grades/student/5
+GET    http://localhost:5149/grades/course-instance/3
+POST   http://localhost:5149/grades
+PUT    http://localhost:5149/grades/5
+DELETE http://localhost:5149/grades/5

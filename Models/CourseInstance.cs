@@ -2,9 +2,8 @@ namespace SchoolApi.Models;
 
     public class CourseInstance
 {
-    private static int _counter = 1;
     
-    public int CourseInstanceId { get; private set; }
+    public string CourseInstanceId { get; } = Guid.NewGuid().ToString();
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public Course Course { get; set; }
@@ -12,8 +11,7 @@ namespace SchoolApi.Models;
 
     public CourseInstance(DateTime startDate, DateTime endDate, Course course, List<Student> students)
     {
-        CourseInstanceId = _counter++;
-    
+
     // Date validation (StartDate and EndDate are required)
     if (startDate == default || endDate == default)
     {
