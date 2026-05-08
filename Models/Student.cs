@@ -1,10 +1,25 @@
 //models/Student.cs
 namespace SchoolApi.Models;
 
-public class Student ( string name, string email){
+public class Student
+{
+    public string StudentId { get; set; } 
+    public string Name { get; set; }
+    public string Email { get; set; }
 
-    
-    public string StudentId {get;} = Guid.NewGuid().ToString();
-    public string Name {get; set;} = name;
-    public string Email {get; set;} = email;
+    // Constructor 1: for create (generates new ID)
+    public Student(string name, string email)
+    {
+        StudentId = Guid.NewGuid().ToString();
+        Name = name;
+        Email = email;
+    }
+
+    // Constructor 2: for update (receives existing ID)
+    public Student(string id, string name, string email)
+    {
+        StudentId = id;
+        Name = name;
+        Email = email;
+    }
 }

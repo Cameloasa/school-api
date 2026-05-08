@@ -2,6 +2,7 @@
 namespace SchoolApi.Services;
 using SchoolApi.Models;
 using SchoolApi.Models.Requests;
+using SchoolApi.Repositories;
 
 public interface ICourseService
 {
@@ -14,63 +15,133 @@ public interface ICourseService
 
 public class CourseService : ICourseService
 {
-    // List of courses
-List<Course> courses = [
-        new ("Mathematics", "An introduction to mathematical concepts and techniques."),
-        new ("Physics", "A study of the fundamental principles governing the natural world."),
-        new ("Chemistry", "An exploration of the properties and interactions of matter."),
-        new ("Biology", "An examination of living organisms and their interactions with the environment."),
-        new ("Computer Science", "A comprehensive overview of computer systems and programming."),
-        new("History", "A study of past events and civilizations."),
-        new("Geography", "An exploration of Earth's landscapes, environments, and populations."),
-        new("Philosophy", "An introduction to fundamental questions about existence, knowledge, and ethics."),
-        new("Economics", "A study of production, consumption, and distribution of resources."),
-        new("Literature", "An analysis of written works across different periods and cultures."),
-        new("Statistics", "An introduction to data analysis, probability, and statistical methods."),
-        new("Software Engineering", "Principles and practices of designing and building software systems."),
-        new("Databases", "Fundamentals of database design, SQL, and data management."),
-        new("Cybersecurity", "An overview of protecting systems, networks, and data from digital attacks.")
-    ];
+    private readonly ICourseRepository _courseRepository;
 
+    public CourseService(ICourseRepository repo)
+    {
+        _courseRepository = repo;
+    }
+
+    //get all courses
     public List<Course> GetCourses()
     {
-        return courses;
+        try{
+            return _courseRepository.GetAllCourses().ToList();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("An error occurred while retrieving courses", ex);
+        }      
     }
 
+    //get course by id
     public Course? GetCourseById(string id)
     {
-        Course? found = courses.FirstOrDefault(c => c.CourseId == id);
-        return found;
+        try
+        {
+            // Validation
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentException("Course ID cannot be empty");
+            }
+            
+            return _courseRepository.GetCourseById(id);
+        }
+        catch (ArgumentException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"An error occurred while retrieving course with ID {id}", ex);
+        }
     }
 
+    //create course
     public Course CreateCourse(CreateCourseRequest request)
     {
-        Course newCourse = new(request.Description, request.Name);
-        courses.Add(newCourse);
-        return newCourse;
+        try
+        {
+            // Validations
+            if (request.Equals(default(CreateCourseRequest)))
+            {
+                throw new ArgumentException("Request cannot be null");
+            }
+            
+            Course newCourse = new(request.Description, request.Name);
+            _courseRepository.AddCourse(newCourse);
+            return newCourse;
+        }
+        catch (ArgumentException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("An error occurred while creating the course", ex);
+        }   
     }
 
+    //update course
     public Course? UpdateCourse(string id, CreateCourseRequest request)
     {
-        Course? found = courses.FirstOrDefault(c => c.CourseId == id);
-        if(found == null)
+        try
         {
-            return null;
-        }
+            // Validations
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentException("Course ID cannot be empty");
+            }
+            
+            if (request.Equals(default(CreateCourseRequest)))
+            {
+                throw new ArgumentException("Request cannot be null");
+            }
 
-        found.Name = request.Name;
-        found.Description = request.Description;
-        return found;
+            // Find existing course
+            var existingCourse = _courseRepository.GetCourseById(id);
+            if (existingCourse == null)
+            {
+                return null;
+            }
+            // Update properties
+            existingCourse.Name = request.Name;
+            existingCourse.Description = request.Description;
+            // Save to repository
+            var updatedCourse = _courseRepository.UpdateCourse(existingCourse);
+            return updatedCourse;
+        }
+        catch (ArgumentException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"An error occurred while updating course with ID {id}", ex);
+        }
+        
     }
 
+    //delete course
     public bool DeleteCourse(string id)
     {
-        Course? found = courses.FirstOrDefault(c => c.CourseId == id);
-        if(found == null)
+        try
         {
-            return false;
+            // Validation
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentException("Course ID cannot be empty");
+            }
+            
+            return _courseRepository.DeleteCourse(id);
         }
-        courses.Remove(found);
-        return true;
+        catch (ArgumentException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"An error occurred while deleting course with ID {id}", ex);
+        }
     }
 }

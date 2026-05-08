@@ -1,5 +1,5 @@
 using SchoolApi.Models;
-
+namespace SchoolApi.Repositories;
 
 public interface IStudentRepository
 {
@@ -7,7 +7,7 @@ public interface IStudentRepository
     bool AddStudent(Student student);
     Student? GetStudentById(string id);
     IEnumerable<Student> GetAllStudents();
-    bool UpdateStudent(Student student);
+    Student? UpdateStudent(Student student);
     bool DeleteStudent(string id);
 }
 
@@ -28,20 +28,15 @@ public class StudentRepository : IStudentRepository
 
     public bool AddStudent(Student student)
     {
-        try
-        {
-            students.Add(student);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        if (student == null) return false;
+        
+        students.Add(student); return true;
+
     }
 
     public Student? GetStudentById(string id)
     {
-        return students.Find(s => s.StudentId == id);
+        return students.FirstOrDefault(s => s.StudentId == id);
     }
 
     public IEnumerable<Student> GetAllStudents()
@@ -49,22 +44,22 @@ public class StudentRepository : IStudentRepository
         return students;
     }
 
-    public bool UpdateStudent(Student student)
+    public Student? UpdateStudent(Student student)
     {
         if (student == null)
         {
-            return false;
+            return null;
         }
 
         var existing = GetStudentById(student.StudentId);
         if (existing == null)
         {
-            return false;
+            return null;
         }
 
-        var index = students.IndexOf(existing);
-        students[index] = student;
-        return true;
+        existing.Name = student.Name;
+        existing.Email = student.Email;
+        return existing;
     }
 
     public bool DeleteStudent(string id)
