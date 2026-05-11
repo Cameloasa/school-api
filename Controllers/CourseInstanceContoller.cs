@@ -95,7 +95,7 @@ public class CourseInstanceController(ICourseInstanceService service):Controller
     }
 
     [HttpGet]
-    [Route("by-student/{studentId}")] 
+    [Route("student/{studentId}")] 
     public ActionResult<IEnumerable<CourseInstance>> GetByStudent(string studentId)
     {
         try
@@ -116,7 +116,7 @@ public class CourseInstanceController(ICourseInstanceService service):Controller
     }   
 
     [HttpGet]
-    [Route("by-course/{courseId}")]
+    [Route("course/{courseId}")]
     public ActionResult<IEnumerable<CourseInstance>> GetByCourse(string courseId)
     {
         try
