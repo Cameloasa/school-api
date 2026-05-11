@@ -9,7 +9,7 @@ public interface ICourseService
     List<Course> GetCourses();
     Course? GetCourseById(string id);
     Course CreateCourse(CreateCourseRequest request);
-    Course? UpdateCourse(string id, CreateCourseRequest request);
+    Course? UpdateCourse(string id, UpdateCourseRequest request);
     bool DeleteCourse(string id);
 }
 
@@ -77,33 +77,13 @@ public class CourseService : ICourseService
     }
 
     //update course
-    public Course? UpdateCourse(string id, CreateCourseRequest request)
+    public Course? UpdateCourse(string id, UpdateCourseRequest request)
     {
         try
         {
-            // Validations
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                throw new ArgumentException("Course ID cannot be empty");
-            }
             
-            if (request.Equals(default(CreateCourseRequest)))
-            {
-                throw new ArgumentException("Request cannot be null");
-            }
-
-            // Find existing course
-            var existingCourse = _courseRepository.GetCourseById(id);
-            if (existingCourse == null)
-            {
-                return null;
-            }
-            // Update properties
-            existingCourse.Title = request.Title;
-            existingCourse.Description = request.Description;
-            // Save to repository
-            var updatedCourse = _courseRepository.UpdateCourse(existingCourse);
-            return updatedCourse;
+            return _courseRepository.UpdateCourseDescription(id, request.Description);
+           
         }
         catch (ArgumentException)
         {

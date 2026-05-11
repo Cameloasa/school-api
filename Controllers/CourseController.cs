@@ -56,17 +56,26 @@ public class CourseController(ICourseService service) : ControllerBase
 
     [HttpPatch]
     [Route("{id}")]
-    public ActionResult<Course> UpdateCourse(string id, [FromBody]CreateCourseRequest request)
+    public ActionResult<Course> UpdateCourse(string id, [FromBody]UpdateCourseRequest request)
     {
-        try
+            // Validate id
+        if(string.IsNullOrEmpty(id))
         {
-            Course? updatedCourse = _service.UpdateCourse(id, request);
-            if(updatedCourse == null)
+                return BadRequest("Id is required");
+            }
+            // Validate request body
+        if(!ModelState.IsValid)
             {
+                return ValidationProblem(ModelState);
+            }
+        try        
+        {
+            //Call service to update course
+            Course? updatedCourse = _service.UpdateCourse(id, request);
+            if(updatedCourse == null)            {
                 return NotFound($"Course with id {id} not found");
             }
             return Ok(updatedCourse);
-        
         }
         catch (Exception)
         {

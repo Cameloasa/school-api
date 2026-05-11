@@ -7,7 +7,7 @@ public interface ICourseRepository
     IEnumerable<Course> GetAllCourses();
     Course? GetCourseById(string id);
     bool AddCourse(Course course);
-    Course? UpdateCourse(Course course);
+    Course? UpdateCourseDescription(string courseId, string newDescription);
     bool DeleteCourse(string id);
 }
 public class CourseRepository : ICourseRepository
@@ -54,33 +54,29 @@ public class CourseRepository : ICourseRepository
         courses.Add(course); return true;
     }
 
-    public Course? UpdateCourse(Course course)
+    // update course description
+    public Course? UpdateCourseDescription(string courseId, string newDescription)
     {
         
-        if (course == null)
-        {
-            return null;
-        }
-
-        var existing = GetCourseById(course.CourseId);
+        Course? existing = GetCourseById(courseId);
         if (existing == null)
         {
             return null;
         }
 
-        existing.Title = course.Title;
-        existing.Description = course.Description;
+        existing.Description = newDescription;
         return existing;
     }
 
+    // delete a course
     public bool DeleteCourse(string id)
     {
-        var existing = GetCourseById(id);
-        if (existing == null)
+        var course = GetCourseById(id);
+        if (course == null)
         {
             return false;
         }
-        courses.Remove(existing);
+        courses.Remove(course);
         return true;
     }   
 }
