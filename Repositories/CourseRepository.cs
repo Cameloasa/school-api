@@ -68,7 +68,7 @@ public class CourseRepository : ICourseRepository
             return null;
         }
 
-        existing.Name = course.Name;
+        existing.Title = course.Title;
         existing.Description = course.Description;
         return existing;
     }

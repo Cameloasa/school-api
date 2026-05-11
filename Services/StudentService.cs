@@ -7,7 +7,7 @@ public interface IStudentService{
     List<Student> GetStudents();
     Student? GetStudentById(string id);
     Student CreateStudent(CreateStudentRequest request);
-    Student? UpdateStudent(string id, CreateStudentRequest request);
+    Student? UpdateStudent(string id, UpdateStudentRequest request);
     bool DeleteStudent(string id);
 }
 
@@ -88,45 +88,11 @@ public class StudentService : IStudentService
     }
 
     //update student
-    public Student? UpdateStudent(string id, CreateStudentRequest request)
+    public Student? UpdateStudent(string id, UpdateStudentRequest request)
     {
         try
         {
-            // validations
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                throw new ArgumentException("Student ID cannot be empty");
-            }
-            
-            if (request.Equals(default(CreateStudentRequest)))
-            {
-                throw new ArgumentException("Request cannot be null");
-            }
-            
-            if (string.IsNullOrWhiteSpace(request.Name))
-            {
-                throw new ArgumentException("Name is required");
-            }
-            
-            if (string.IsNullOrWhiteSpace(request.Email))
-            {
-                throw new ArgumentException("Email is required");
-            }
-            
-            // Find existing student
-            var existingStudent = _studentRepository.GetStudentById(id);
-            if (existingStudent == null)
-            {
-                return null;
-            }
-            
-            // Update properties
-            existingStudent.Name = request.Name;
-            existingStudent.Email = request.Email;
-            
-            // Save to repository
-            var updatedStudent = _studentRepository.UpdateStudent(existingStudent);
-            return updatedStudent;
+            return  _studentRepository.UpdateStudentName(id, request.Name);
         }
         catch (ArgumentException)
         {

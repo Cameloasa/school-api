@@ -10,7 +10,7 @@ public class Student
     // Default constructor for deserialization
     public Student()
     {
-        StudentId = Guid.NewGuid().ToString();
+        StudentId = Guid.NewGuid().ToString()[..6];
         Name = string.Empty;
         Email = string.Empty;
     }
@@ -19,7 +19,7 @@ public class Student
     // Constructor 1: for create (generates new ID) 
     public Student(string name, string email)
     {
-        StudentId = Guid.NewGuid().ToString();
+        StudentId = Guid.NewGuid().ToString()[..6];
         Name = name;
         Email = email;
     }

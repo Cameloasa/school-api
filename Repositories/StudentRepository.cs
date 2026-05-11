@@ -7,7 +7,7 @@ public interface IStudentRepository
     bool AddStudent(Student student);
     Student? GetStudentById(string id);
     IEnumerable<Student> GetAllStudents();
-    Student? UpdateStudent(Student student);
+    Student? UpdateStudentName(string studentId, string newName);
     bool DeleteStudent(string id);
     bool EmailExists(string email);
 }
@@ -27,6 +27,7 @@ public class StudentRepository : IStudentRepository
         ];
     }
 
+    // Create a new student
     public bool AddStudent(Student student)
     {
         if (student == null) return false;
@@ -35,34 +36,31 @@ public class StudentRepository : IStudentRepository
 
     }
 
+    // Read a student by ID
     public Student? GetStudentById(string id)
     {
         return students.FirstOrDefault(s => s.StudentId == id);
     }
 
+    // Read all students
     public IEnumerable<Student> GetAllStudents()
     {
         return students;
     }
 
-    public Student? UpdateStudent(Student student)
+    public Student? UpdateStudentName(string studentId, string newName)
     {
-        if (student == null)
-        {
-            return null;
-        }
-
-        var existing = GetStudentById(student.StudentId);
+        Student? existing = GetStudentById(studentId);
         if (existing == null)
         {
             return null;
         }
 
-        existing.Name = student.Name;
-        existing.Email = student.Email;
+        existing.Name = newName;
         return existing;
     }
 
+    // Delete a student by ID
     public bool DeleteStudent(string id)
     {
         var student = GetStudentById(id);
@@ -74,10 +72,11 @@ public class StudentRepository : IStudentRepository
         return students.Remove(student);
     }
 
+    // Check if an email already exists in the repository
     public bool EmailExists(string email)
-{
-    return students.Any(s => s.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
-}
+    {
+        return students.Any(s => s.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+    }
 
 }
 

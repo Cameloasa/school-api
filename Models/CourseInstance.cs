@@ -11,8 +11,8 @@ public class CourseInstance
     public CourseInstance()
 
     {
-        CourseInstanceId = Guid.NewGuid().ToString();
-        Students = new List<Student>();
+        CourseInstanceId = Guid.NewGuid().ToString()[..6];
+        Students = [];
         Course = new Course();
     }
 

@@ -62,7 +62,7 @@ public class CourseService : ICourseService
     {
         try
         {
-            Course newCourse = new(request.Description, request.Name);
+            Course newCourse = new(request.Description, request.Title);
             _courseRepository.AddCourse(newCourse);
             return newCourse;
         }
@@ -99,7 +99,7 @@ public class CourseService : ICourseService
                 return null;
             }
             // Update properties
-            existingCourse.Name = request.Name;
+            existingCourse.Title = request.Title;
             existingCourse.Description = request.Description;
             // Save to repository
             var updatedCourse = _courseRepository.UpdateCourse(existingCourse);

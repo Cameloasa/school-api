@@ -12,7 +12,7 @@ public class Grade
     // Default constructor for deserialization
     public Grade()
     {
-        GradeId = Guid.NewGuid().ToString();
+        GradeId = Guid.NewGuid().ToString()[..6];
         Value = string.Empty;
         CourseInstance = new CourseInstance();
         Student = new Student();

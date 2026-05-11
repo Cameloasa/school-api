@@ -62,20 +62,29 @@ public class StudentController(IStudentService service):ControllerBase
 
     [HttpPatch]
     [Route("{id}")]
-    public ActionResult<Student?> UpdateStudent(string id, [FromBody]CreateStudentRequest request)
+    public ActionResult<Student?> UpdateStudent(string id, [FromBody]UpdateStudentRequest request)
     {
+        // 1. Validate ID
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest("Invalid student ID");
+
+        // 2. Validate body
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
+
         try
         {
-            Student? updatedStudent = _service.UpdateStudent(id,request);
-            if(updatedStudent == null)
-            {
+            // 3. Call service
+            Student? updatedStudent = _service.UpdateStudent(id, request);
+
+            if (updatedStudent == null)
                 return NotFound($"Student with id {id} not found");
-            }
+
             return Ok(updatedStudent);
         }
-        catch(Exception)
+        catch (Exception)
         {
-          return StatusCode(500,"An error occured while processing the request ");  
+            return StatusCode(500, "An error occurred while processing the request");
         }
     }
 
