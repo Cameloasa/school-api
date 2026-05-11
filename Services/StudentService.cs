@@ -62,19 +62,9 @@ public class StudentService : IStudentService
         try
         {
             // Validations
-            if (request.Equals(default(CreateStudentRequest)))
+            if(_studentRepository.EmailExists(request.Email))
             {
-                throw new ArgumentException("Request cannot be empty");
-            }
-            //name validation
-            if (string.IsNullOrWhiteSpace(request.Name))
-            {
-                throw new ArgumentException("Name is required");
-            }
-            //email validation
-            if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains("@"))
-            {
-                throw new ArgumentException("Valid email is required");
+                throw new ArgumentException("Email already exists");
             }
             
             Student newStudent = new(request.Name, request.Email);

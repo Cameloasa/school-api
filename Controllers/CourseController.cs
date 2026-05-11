@@ -39,14 +39,14 @@ public class CourseController(ICourseService service) : ControllerBase
     [HttpPost]
     public ActionResult<Course?> CreateCourse([FromBody]CreateCourseRequest request)
     {
+        if(!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
         try
         {
             Course newCourse = _service.CreateCourse(request);
             return Created("/courses", newCourse);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
         }
         catch (Exception)
         {
@@ -66,6 +66,7 @@ public class CourseController(ICourseService service) : ControllerBase
                 return NotFound($"Course with id {id} not found");
             }
             return Ok(updatedCourse);
+        
         }
         catch (Exception)
         {

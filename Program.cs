@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Identity;
-using SchoolApi.Models;
-using SchoolApi.Models.Requests;
+
 using SchoolApi.Repositories;
 using SchoolApi.Services;
 

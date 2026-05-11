@@ -92,7 +92,7 @@ public class CourseInstanceService : ICourseInstanceService
 
             // Validate students
             List<Student> students = [];
-            foreach (string studentId in request.StudentId)
+            foreach (string studentId in request.StudentIds)
             {
                 Student? student = _studentRepository.GetStudentById(studentId) 
                 ?? throw new ArgumentException($"Student with ID {studentId} not found");
@@ -144,7 +144,7 @@ public class CourseInstanceService : ICourseInstanceService
 
             // Validate students
             List<Student> students = [];
-            foreach (string studentId in request.StudentId)
+            foreach (string studentId in request.StudentIds)
             {
                 Student? student = _studentRepository.GetStudentById(studentId) ?? throw new ArgumentException($"Student with ID {studentId} not found");
                 students.Add(student);

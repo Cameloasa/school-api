@@ -45,14 +45,14 @@ public class StudentController(IStudentService service):ControllerBase
     [HttpPost]
     public ActionResult<Student?> CreateStudent([FromBody]CreateStudentRequest request)
     {
+        if(!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
         try
         {
             Student newStudent = _service.CreateStudent(request);
             return Created("/students", newStudent);
-        }
-        catch(ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
         }
         catch(Exception)
         {

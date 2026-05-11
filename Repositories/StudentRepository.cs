@@ -9,6 +9,7 @@ public interface IStudentRepository
     IEnumerable<Student> GetAllStudents();
     Student? UpdateStudent(Student student);
     bool DeleteStudent(string id);
+    bool EmailExists(string email);
 }
 
 public class StudentRepository : IStudentRepository
@@ -72,5 +73,11 @@ public class StudentRepository : IStudentRepository
 
         return students.Remove(student);
     }
+
+    public bool EmailExists(string email)
+{
+    return students.Any(s => s.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+}
+
 }
 

@@ -62,34 +62,6 @@ public class CourseService : ICourseService
     {
         try
         {
-            // Validations
-            if (request.Equals(default(CreateCourseRequest)))
-            {
-                throw new ArgumentException("Request cannot be null");
-            }
-            //name validation not empty and at least 3 characters
-            // Validare Name
-        if (string.IsNullOrWhiteSpace(request.Name))
-        {
-            throw new ArgumentException("Course name cannot be empty");
-        }
-        
-        if (request.Name.Length < 3)
-        {
-            throw new ArgumentException("Course name must be at least 3 characters long");
-        }
-        
-        // Validare Description
-        if (string.IsNullOrWhiteSpace(request.Description))
-        {
-            throw new ArgumentException("Course description cannot be empty");
-        }
-        
-        if (request.Description.Length < 10)
-        {
-            throw new ArgumentException("Course description must be at least 10 characters long");
-        }
-
             Course newCourse = new(request.Description, request.Name);
             _courseRepository.AddCourse(newCourse);
             return newCourse;
