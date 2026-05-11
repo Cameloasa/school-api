@@ -66,16 +66,15 @@ public class CourseRepository : ICourseRepository
 
         existing.Description = newDescription;
         return existing;
+        // save changes if using a real database context
     }
 
     // delete a course
     public bool DeleteCourse(string id)
     {
         var course = GetCourseById(id);
-        if (course == null)
-        {
-            return false;
-        }
+        if (course == null) return false;
+        
         courses.Remove(course);
         return true;
     }   

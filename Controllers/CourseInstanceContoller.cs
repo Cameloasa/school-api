@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolApi.Models;
 using SchoolApi.Models.Requests;
 using SchoolApi.Services;
+using SchoolApi.Validators;
 
 [ApiController]
 [Route("course-instances")]
@@ -36,6 +37,20 @@ public class CourseInstanceController(ICourseInstanceService service):Controller
     [HttpPost]
     public ActionResult<CourseInstance> CreateCourseInstance([FromBody]CreateCourseInstancesRequest request)
     {
+        //check if the model state is valid
+        if(!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        //call the date validator to check if the start date is before the end date and if the dates are in the future
+        var validator = new DateValidation(request.StartDate, request.EndDate);
+        var errors = validator.Validate();
+        if (errors.Any())
+        {
+            return BadRequest(errors);
+        }
+        
         try
         {
             CourseInstance newCourseInstance = _service.CreateCourseInstance(request);
@@ -53,20 +68,34 @@ public class CourseInstanceController(ICourseInstanceService service):Controller
 
     [HttpPatch]
     [Route("{id}")]
-    public ActionResult<CourseInstance?> UpdateCourseInstance(string id, [FromBody]CreateCourseInstancesRequest request)
+    public ActionResult<CourseInstance?> UpdateCourseInstance(string id, [FromBody]UpdateCourseInstanceRequest request)
     {
+        // Validate state
+        if(!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+        // Validate dates -custome validator to check if the start date is before the end date and if the dates are in the future
+        var validator = new DateValidation(request.StartDate, request.EndDate);
+        var errors = validator.Validate();
+            if (errors.Any())
+            {
+                return BadRequest(errors);
+            }
+            
         try
         {
-            CourseInstance? updatedCourseInstance = _service.UpdateCourseInstance(id, request);
+            CourseInstance? updatedCourseInstance = _service.UpdateCourseInstanceDate(id, request);
             if (updatedCourseInstance == null)
             {
                 return NotFound($"Course instance with id {id} not found");
             }
             return Ok(updatedCourseInstance);
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
-            return BadRequest();
+            return BadRequest(ex.Message);
         }
         catch (Exception)
         {

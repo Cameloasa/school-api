@@ -1,4 +1,5 @@
 using SchoolApi.Models;
+using SchoolApi.Models.Requests;
 namespace SchoolApi.Repositories;
 public interface ICourseInstanceRepository
 {
@@ -6,20 +7,20 @@ public interface ICourseInstanceRepository
     bool AddCourseInstance(CourseInstance courseInstance);
     CourseInstance? GetCourseInstanceById(string id);
     IEnumerable<CourseInstance> GetAllCourseInstances();
-    CourseInstance? UpdateCourseInstance(CourseInstance courseInstance);
+    CourseInstance? UpdateCourseInstanceDate(string courseInstanceId, DateTime newStartDate, DateTime newEndDate);
     bool DeleteCourseInstance(string id);
     
     // Specialized searches - optimized for DB
     IEnumerable<CourseInstance> GetByStudentId(string studentId);      // WHERE StudentId = ?
     IEnumerable<CourseInstance> GetByCourseId(string courseId);        // WHERE CourseId = ?
-    IEnumerable<CourseInstance> GetByDateRange(DateTime start, DateTime end); // BETWEEN
+    IEnumerable<CourseInstance> GetByDateRange(DateTime startDate, DateTime endDate); // BETWEEN
    
 }
 
 public class CourseInstanceRepository : ICourseInstanceRepository
 {
 
-    // In-memory storage for course instances
+    // In-memory list to store course instances
     private List<CourseInstance> courseInstances;
 
     // Constructor to initialize the repository with some sample data
@@ -39,10 +40,10 @@ public class CourseInstanceRepository : ICourseInstanceRepository
     // Delete a course instance by ID
     public bool DeleteCourseInstance(string id)
     {
-        var existing = GetCourseInstanceById(id);
-        if (existing == null) return false;
+        var courseInstance = GetCourseInstanceById(id);
+        if (courseInstance == null) return false;
         
-        return courseInstances.Remove(existing);
+        return courseInstances.Remove(courseInstance);
     }
 
     // Get all course instances
@@ -58,35 +59,33 @@ public class CourseInstanceRepository : ICourseInstanceRepository
 
     }
 
-    public IEnumerable<CourseInstance> GetByDateRange(DateTime start, DateTime end)
+    // Get course instances by date range
+    public IEnumerable<CourseInstance> GetByDateRange(DateTime startDate, DateTime endDate)
     {
-        return courseInstances.Where(ci => ci.StartDate <= end && ci.EndDate >= start);
+        return courseInstances.Where(ci => ci.StartDate <= endDate && ci.EndDate >= startDate);
     }
 
+    // Get course instances by student ID
     public IEnumerable<CourseInstance> GetByStudentId(string studentId)
     {
         return courseInstances.Where(ci => ci.Students.Any(s => s.StudentId == studentId));
     }
 
+    // Get a course instance by ID
     public CourseInstance? GetCourseInstanceById(string id)
     {
         return courseInstances.FirstOrDefault(ci => ci.CourseInstanceId == id);
     }
 
-    public CourseInstance? UpdateCourseInstance(CourseInstance courseInstance)
+    // Update a course instance
+    public CourseInstance? UpdateCourseInstanceDate(string id, DateTime newStartDate, DateTime newEndDate)
     {
-        if (courseInstance == null)
-        {
-            return null;
-        }
-        var existing = GetCourseInstanceById(courseInstance.CourseInstanceId);
-        if (existing == null)        {
-            return null;
-        }
-        existing.EndDate = courseInstance.EndDate;
-        existing.StartDate = courseInstance.StartDate;
-        existing.Course = courseInstance.Course;
-        existing.Students = courseInstance.Students;
+        CourseInstance? existing = GetCourseInstanceById(id);
+        if (existing == null) return null;
+        
+        existing.StartDate = newStartDate;
+        existing.EndDate = newEndDate;
         return existing;
+        // save changes if using a real database context
     }
 }

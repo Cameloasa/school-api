@@ -62,8 +62,16 @@ public class CourseService : ICourseService
     {
         try
         {
+           
             Course newCourse = new(request.Description, request.Title);
-            _courseRepository.AddCourse(newCourse);
+
+                //save to repository
+            bool success = _courseRepository.AddCourse(newCourse);
+
+            if (!success)
+            {
+                throw new InvalidOperationException("Failed to create course");
+            }
             return newCourse;
         }
         catch (ArgumentException)

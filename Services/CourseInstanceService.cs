@@ -8,7 +8,7 @@ public interface ICourseInstanceService
     List<CourseInstance> GetCourseInstances();
     CourseInstance? GetCourseInstanceById(string id);
     CourseInstance CreateCourseInstance(CreateCourseInstancesRequest request);
-    CourseInstance? UpdateCourseInstance(string id, CreateCourseInstancesRequest request);
+    CourseInstance? UpdateCourseInstanceDate(string id, UpdateCourseInstanceRequest request);
     bool DeleteCourseInstance(string id);
     IEnumerable<CourseInstance> GetByStudent(string studentId); 
     IEnumerable<CourseInstance> GetByCourse(string courseId); 
@@ -69,23 +69,8 @@ public class CourseInstanceService : ICourseInstanceService
     //create course instance
     public CourseInstance CreateCourseInstance(CreateCourseInstancesRequest request)
     {
-
         try
         {
-            // Validations date
-            if (request.StartDate < DateTime.Now.Date)
-            {
-                throw new ArgumentException("Start date must be in the future");
-            }
-            if (request.StartDate >= request.EndDate)
-            {
-                throw new ArgumentException("Start date must be before end date");
-            }
-            if(request.EndDate < DateTime.Now)
-            {
-                throw new ArgumentException("End date must be in the future");
-            }
-
             // Validate course
             Course? course = _courseRepository.GetCourseById(request.CourseId) ?? 
             throw new ArgumentException($"Course with ID {request.CourseId} not found");
@@ -99,12 +84,16 @@ public class CourseInstanceService : ICourseInstanceService
                 students.Add(student);
             }
 
-            CourseInstance newInstance = new (request.StartDate, 
+            CourseInstance newInstance = new (  request.StartDate, 
                                                 request.EndDate, 
                                                 course,
                                                 students);
             // Save to repository
-            _courseInstanceRepository.AddCourseInstance(newInstance);
+            bool success = _courseInstanceRepository.AddCourseInstance(newInstance);
+            if (!success)
+            {
+                throw new InvalidOperationException("Failed to create course instance");
+            }
             // Return the created instance
             return newInstance;
         }
@@ -119,43 +108,13 @@ public class CourseInstanceService : ICourseInstanceService
     }
 
     //update course instance
-    public CourseInstance? UpdateCourseInstance(string id, CreateCourseInstancesRequest request)
+    public CourseInstance? UpdateCourseInstanceDate(string id, UpdateCourseInstanceRequest request)
     {
         try
         {
-            // Validations
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                throw new ArgumentException("Course instance ID cannot be empty");
-            }
             
-            if (request.StartDate >= request.EndDate)
-            {
-                throw new ArgumentException("Start date must be before end date");
-            }
-
-            CourseInstance? existing = _courseInstanceRepository.GetCourseInstanceById(id);
-            if (existing == null)
-            {
-                return null;
-            }
-
-            Course? course = _courseRepository.GetCourseById(request.CourseId) ?? throw new ArgumentException($"Course with ID {request.CourseId} not found");
-
-            // Validate students
-            List<Student> students = [];
-            foreach (string studentId in request.StudentIds)
-            {
-                Student? student = _studentRepository.GetStudentById(studentId) ?? throw new ArgumentException($"Student with ID {studentId} not found");
-                students.Add(student);
-            }
-
-            existing.StartDate = request.StartDate;
-            existing.EndDate = request.EndDate;
-            existing.Course = course;
-            existing.Students = students;
-
-            return _courseInstanceRepository.UpdateCourseInstance(existing);
+            return _courseInstanceRepository.UpdateCourseInstanceDate(id, request.StartDate, request.EndDate);
+            
         }
         catch (ArgumentException)
         {

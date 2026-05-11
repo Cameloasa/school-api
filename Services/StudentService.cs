@@ -68,12 +68,14 @@ public class StudentService : IStudentService
             }
             
             Student newStudent = new(request.Name, request.Email);
+            //save to repository
             bool success = _studentRepository.AddStudent(newStudent);
             
             if (!success)
             {
                 throw new InvalidOperationException("Failed to create student");
             }
+           
             
             return newStudent;
         }

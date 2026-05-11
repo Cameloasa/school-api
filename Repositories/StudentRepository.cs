@@ -58,17 +58,15 @@ public class StudentRepository : IStudentRepository
 
         existing.Name = newName;
         return existing;
+        // save changes if using a real database context
     }
 
     // Delete a student by ID
     public bool DeleteStudent(string id)
     {
         var student = GetStudentById(id);
-        if (student == null)
-        {
-            return false;
-        }
-
+        if (student == null) return false;
+        
         return students.Remove(student);
     }
 
