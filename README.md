@@ -25,7 +25,7 @@ Id (int)
 StartDate (DateTime)
 EndDate (DateTime)
 Course (Course)
-Students (List<Student>)
+Students [List<Student>]
 4. Grade
 Id (int)
 Value (string, e.g., "A", "B+", "C-")
@@ -63,7 +63,7 @@ Student (Student)
 
 Make sure you have .NET 10 installed.
 Clone the repository:
-git clone <repository-url>
+git clone [repository-url]
 Navigate to the project folder and run:
 dotnet run
 Open your browser or Postman and test the endpoints, for example:
@@ -76,30 +76,35 @@ Designed for learning purposes to practice C# classes, lists, LINQ, and building
 Endpoints return JSON objects that include nested data (e.g., course instances include course and students).
 
 text´´
-GET    http://localhost:5149/students
-GET    http://localhost:5149/students/5
-POST   http://localhost:5149/students
-PATCH  http://localhost:5149/students/5
-DELETE http://localhost:5149/students/5
+Students
+GET    <http://localhost:5149/students>
+GET    <http://localhost:5149/students/{id}>
+POST   <http://localhost:5149/students>
+PATCH  <http://localhost:5149/students/{id}>
+DELETE <http://localhost:5149/students/{id}>
 
-GET    http://localhost:5149/courses
-GET    http://localhost:5149/courses/5
-POST   http://localhost:5149/courses
-PATCH  http://localhost:5149/courses/5
-DELETE http://localhost:5149/courses/5
+Courses
+GET    <http://localhost:5149/courses>
+GET    <http://localhost:5149/courses/{id}>
+POST   <http://localhost:5149/courses>
+PATCH  <http://localhost:5149/courses/{id}>
+DELETE <http://localhost:5149/courses/{id}>
 
-GET    http://localhost:5149/course-instances
-GET    http://localhost:5149/course-instances/5
-GET    http://localhost:5149/course-instances/by-student/5
-GET    http://localhost:5149/course-instances/by-course/2
-POST   http://localhost:5149/course-instances
-PATCH  http://localhost:5149/course-instances/5
-DELETE http://localhost:5149/course-instances/5
+Course-instance
+GET    <http://localhost:5149/course-instances>
+GET    <http://localhost:5149/course-instances/{id}>
+GET    <http://localhost:5149/course-instances/student/{studentId}>
+GET    <http://localhost:5149/course-instances/course/{courseId}>
+POST   <http://localhost:5149/course-instances>
+PATCH  <http://localhost:5149/course-instances/{id}>
+DELETE <http://localhost:5149/course-instances/{id}>
 
-GET    http://localhost:5149/grades
-GET    http://localhost:5149/grades/5
-GET    http://localhost:5149/grades/student/5
-GET    http://localhost:5149/grades/course-instance/3
-POST   http://localhost:5149/grades
-PUT    http://localhost:5149/grades/5
-DELETE http://localhost:5149/grades/5
+Grades
+GET    <http://localhost:5149/grades>
+GET    <http://localhost:5149/grades/{id}>
+GET    <http://localhost:5149/grades/student/{studentId}>
+GET    <http://localhost:5149/grades/course-instance/{courseInstanceId}>
+GET    <http://localhost:5149/grades/student/{studentId}/course-instanc{courseInstanceId}>
+POST   <http://localhost:5149/grades>
+PATCH  <http://localhost:5149/grades/student/{studentId}/course/{courseId}>
+DELETE <http://localhost:5149/grades/{id}>
