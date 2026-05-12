@@ -9,11 +9,12 @@ public interface IGradeRepository
     bool AddGrade(Grade grade);
     Grade? GetGradeById(string id);
     IEnumerable<Grade> GetAllGrades();
-    Grade? UpdateGradeValue(string gradeId, string studentId, string courseId, string newValue);
+    Grade? UpdateGradeValue(string studentId, string courseId, string newValue);
     bool DeleteGrade(string id);
     
     // Search specific
-    IEnumerable<Grade> GetGradesByStudentId(string studentId);      
+    IEnumerable<Grade> GetGradesByStudentId(string studentId);     
+    IEnumerable<Grade> GetGradesByCourseId(string courseId);  
     IEnumerable<Grade> GetGradesByCourseInstanceId(string courseInstanceId); 
     IEnumerable<Grade> GetGradesByStudentAndCourseId(string studentId, string courseId); 
     Grade? GetGradeByStudentAndCourseInstanceId(string studentId, string courseInstanceId);  
@@ -76,24 +77,13 @@ public class GradeRepository : IGradeRepository
     }
 
     // Update value of a grade for a student (assuming one grade per student per course instance)
-    public Grade? UpdateGradeValue(string gradeId, string studentId, string courseId, string newValue)
+    public Grade? UpdateGradeValue(string studentId, string courseId, string newValue)
     {
-         // Search for the grade by ID
-        Grade? existing = GetGradeById(gradeId);
+        var existing = GetGradesByStudentAndCourseId(studentId, courseId).FirstOrDefault();
         if (existing == null) return null;
 
-        // 2. Verify that the grade belongs to the correct student
-        if (existing.Student.StudentId != studentId)
-            return null;
-
-        // 3. Verify that the grade belongs to the correct course
-        if (existing.CourseInstance.Course.CourseId != courseId)
-            return null;
-
-        // 4. Update the value
         existing.Value = newValue;
         return existing;
-        // save changes if using a real database context
     }
 
     // Search for grades by student and course (not instance)
@@ -101,5 +91,10 @@ public class GradeRepository : IGradeRepository
     {
         return grades.Where(g => g.Student?.StudentId == studentId && 
                                  g.CourseInstance?.Course?.CourseId == courseId);
+    }
+
+    public IEnumerable<Grade> GetGradesByCourseId(string courseId)
+    {
+        return grades.Where(g => g.CourseInstance?.Course?.CourseId == courseId);
     }
 }

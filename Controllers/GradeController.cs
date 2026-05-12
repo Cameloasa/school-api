@@ -107,6 +107,10 @@ public class GradeController(IGradeService service) : ControllerBase
     [HttpPost]
     public ActionResult<List<Grade>> CreateGrade([FromBody] CreateGradeRequest request)
     {
+        if(!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
         try
         {
             List<Grade> newGrades = _service.CreateGrade(request);
@@ -126,28 +130,25 @@ public class GradeController(IGradeService service) : ControllerBase
         }
     }
 
-    // PATCH: /grades/{id}
-    [HttpPatch("{id}")]
-    public ActionResult<Grade?> UpdateGrade(string id, [FromBody] UpdateGradeRequest request)
-    {
-        try
+    // /grades/student/{studentId}/course/{courseId}
+    [HttpPatch("student/{studentId}/course/{courseId}")]
+    public ActionResult<Grade?> UpdateGrade(
+        string studentId,
+        string courseId,
+        [FromBody] UpdateGradeRequest request)
         {
-            Grade? updatedGrade = _service.UpdateGrade(id, request);
-            if (updatedGrade == null)
-            {
-                return NotFound($"Grade with ID {id} not found");
-            }
-            return Ok(updatedGrade);
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            Grade? updated = _service.UpdateGradeValue(studentId, courseId, request);
+
+            if (updated == null)
+                return NotFound("Grade not found for this student and course");
+
+            return Ok(updated);
         }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
-    }
+
+
 
     // DELETE: /grades/{id}
     [HttpDelete("{id}")]

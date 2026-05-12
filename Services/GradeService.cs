@@ -6,27 +6,31 @@ namespace SchoolApi.Services;
 
 public interface IGradeService
 {
-    IEnumerable<Grade> GetGrades();  // ← schimbat în IEnumerable
+    IEnumerable<Grade> GetGrades();  
     Grade? GetGradeById(string id);
     IEnumerable<Grade> GetGradesByStudent(string studentId);
+    IEnumerable<Grade> GetGradesByCourseId(string courseId);
     IEnumerable<Grade> GetGradesByCourseInstance(string courseInstanceId);
     Grade? GetGradeByStudentAndCourseInstance(string studentId, string courseInstanceId);
     List<Grade> CreateGrade(CreateGradeRequest request);
-    Grade? UpdateGrade(string id, UpdateGradeRequest request);
+    Grade? UpdateGradeValue(string studentId, string courseId, UpdateGradeRequest request);
     bool DeleteGrade(string id);
 }
 
 public class GradeService : IGradeService
 {
     private readonly IStudentRepository _studentRepository;
+    private readonly ICourseRepository _courseRepository;
     private readonly ICourseInstanceRepository _courseInstanceRepository;
     private readonly IGradeRepository _gradeRepository;
 
     public GradeService(IStudentRepository studentRepo, 
+                        ICourseRepository courseRepo,
                         ICourseInstanceRepository courseInstanceRepo,
                         IGradeRepository gradeRepo)
     {
         _studentRepository = studentRepo;
+        _courseRepository = courseRepo;
         _courseInstanceRepository = courseInstanceRepo;
         _gradeRepository = gradeRepo;
     }
@@ -36,7 +40,7 @@ public class GradeService : IGradeService
     {
         try
         {
-            return _gradeRepository.GetAllGrades().ToList();
+            return [.. _gradeRepository.GetAllGrades()];
         }
         catch (Exception ex)
         {
@@ -72,7 +76,7 @@ public class GradeService : IGradeService
             if (string.IsNullOrWhiteSpace(studentId))
                 throw new ArgumentException("Student ID cannot be empty");
             
-            return _gradeRepository.GetGradesByStudentId(studentId).ToList();
+            return [.. _gradeRepository.GetGradesByStudentId(studentId)];
         }
         catch (ArgumentException)
         {
@@ -92,7 +96,7 @@ public class GradeService : IGradeService
             if (string.IsNullOrWhiteSpace(courseInstanceId))
                 throw new ArgumentException("Course instance ID cannot be empty");
             
-            return _gradeRepository.GetGradesByCourseInstanceId(courseInstanceId).ToList();
+            return [.. _gradeRepository.GetGradesByCourseInstanceId(courseInstanceId)];
         }
         catch (ArgumentException)
         {
@@ -124,67 +128,43 @@ public class GradeService : IGradeService
         }
     }
 
-    //create grade
-    public List<Grade> CreateGrade(CreateGradeRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.CourseInstanceId))
-            throw new ArgumentException("Course instance ID is required");
-
-        var courseInstance = _courseInstanceRepository.GetCourseInstanceById(request.CourseInstanceId)
-            ?? throw new ArgumentException($"Course instance {request.CourseInstanceId} not found");
-
-        var validGrades = new List<string> { "A", "B", "C", "D", "E", "F" };
-
-        var createdGrades = new List<Grade>();
-
-        foreach (var entry in request.Grades)
-        {
-            if (string.IsNullOrWhiteSpace(entry.StudentId))
-                throw new ArgumentException("Student ID is required");
-
-            if (string.IsNullOrWhiteSpace(entry.Value))
-                throw new ArgumentException("Grade value is required");
-
-            if (!validGrades.Contains(entry.Value.ToUpper()))
-                throw new ArgumentException("Grade must be one of: A, B, C, D, E, F");
-
-            var student = _studentRepository.GetStudentById(entry.StudentId)
-                ?? throw new ArgumentException($"Student {entry.StudentId} not found");
-
-            if (!courseInstance.Students.Any(s => s.StudentId == entry.StudentId))
-                throw new ArgumentException($"Student {entry.StudentId} is not enrolled in this course instance");
-
-            var grade = new Grade(entry.Value, courseInstance, student);
-
-            _gradeRepository.AddGrade(grade);
-            createdGrades.Add(grade);
-        }
-
-    return createdGrades;
-    }
-
-
-    //update grade
-    public Grade? UpdateGrade(string id, UpdateGradeRequest request)
+   //create grade
+   public List<Grade> CreateGrade(CreateGradeRequest request)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(id))
-                throw new ArgumentException("Grade ID cannot be empty");
-            
-            if (request.Equals(default(UpdateGradeRequest)))
-                throw new ArgumentException("Request cannot be null");
-            
-            Grade? existingGrade = _gradeRepository.GetGradeById(id);
-            if (existingGrade == null) 
-                return null;
+            var validGradesValues = new List<string> { "A", "B", "C", "D", "E", "F" };
+            var createdGrades = new List<Grade>();
 
-            if (!string.IsNullOrWhiteSpace(request.Value))
+            // 1. CourseInstance must exist
+            var courseInstance = _courseInstanceRepository.GetCourseInstanceById(request.CourseInstanceId)
+                ?? throw new ArgumentException($"Course instance {request.CourseInstanceId} not found");
+
+            // 2. Iterate through entries
+            foreach (var entry in request.Grades)
             {
-                existingGrade.Value = request.Value;
+                // Validate grade value
+                if (!validGradesValues.Contains(entry.Value.ToUpper()))
+                    throw new ArgumentException("Grade must be one of: A, B, C, D, E, F");
+
+                // Validate student
+                var student = _studentRepository.GetStudentById(entry.StudentId)
+                    ?? throw new ArgumentException($"Student {entry.StudentId} not found");
+
+                // 3. Create grade
+                var newGrade = new Grade(entry.Value, courseInstance, student);
+
+                // 4. Save to repo
+                bool success = _gradeRepository.AddGrade(newGrade);
+
+                if (!success)
+                    throw new InvalidOperationException("Failed to create grade");
+
+                // 5. Add to list
+                createdGrades.Add(newGrade);
             }
 
-            return _gradeRepository.UpdateGrade(existingGrade);
+            return createdGrades;
         }
         catch (ArgumentException)
         {
@@ -192,7 +172,21 @@ public class GradeService : IGradeService
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"An error occurred while updating the grade with ID {id}", ex);
+            throw new InvalidOperationException("An error occurred while creating the grade", ex);
+        }
+    }
+
+    //update grade value
+    public Grade? UpdateGradeValue(string studentId, string courseId, UpdateGradeRequest request)
+    {
+        try
+        {
+            return _gradeRepository.UpdateGradeValue(studentId, courseId, request.Value);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                $"An error occurred while updating grade for student {studentId} at course {courseId}", ex);
         }
     }
 
@@ -215,4 +209,23 @@ public class GradeService : IGradeService
             throw new InvalidOperationException($"An error occurred while deleting the grade with ID {id}", ex);
         }
     }
+
+    //get grade by course Id
+    public IEnumerable<Grade> GetGradesByCourseId(string courseId)
+    {
+        try
+        {
+            return [.. _gradeRepository.GetGradesByCourseId(courseId)];
+        }
+        catch (ArgumentException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"An error occurred while retrieving grades for course ID {courseId}", ex);
+        }
+    }
+
+
 }
