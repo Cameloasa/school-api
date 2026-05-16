@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SchoolApi.Models.Requests;
 
-public struct CreateStudentRequest
+public struct UpdateStudentRequest
 {
     [Required]
     [StringLength(50)]
@@ -11,8 +11,4 @@ public struct CreateStudentRequest
     [Required]
     [StringLength(50)]
     public string LastName { get; set; }
-
-    [Required]
-    [EmailAddress]
-    public string Email { get; set; }
 }
