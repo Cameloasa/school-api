@@ -1,5 +1,5 @@
 using SchoolApi.Models;
-using SchoolApi.Models.Requests;
+
 namespace SchoolApi.Repositories;
 public interface ICourseInstanceRepository
 {
@@ -11,6 +11,7 @@ public interface ICourseInstanceRepository
     bool DeleteCourseInstance(string id);
     
     // Specialized searches - optimized for DB
+    CourseInstance? GetActiveInstanceByCourseId(string courseId);
     IEnumerable<CourseInstance> GetByStudentId(string studentId);      // WHERE StudentId = ?
     IEnumerable<CourseInstance> GetByCourseId(string courseId);        // WHERE CourseId = ?
     IEnumerable<CourseInstance> GetByDateRange(DateTime startDate, DateTime endDate); // BETWEEN
@@ -44,6 +45,14 @@ public class CourseInstanceRepository : ICourseInstanceRepository
         if (courseInstance == null) return false;
         
         return courseInstances.Remove(courseInstance);
+    }
+
+    // get all active course instance by course id
+    public CourseInstance? GetActiveInstanceByCourseId(string courseId)
+    {
+        var today = DateTime.UtcNow;
+
+        return GetByCourseId(courseId).FirstOrDefault(ci => ci.StartDate <= today && ci.EndDate >= today);
     }
 
     // Get all course instances

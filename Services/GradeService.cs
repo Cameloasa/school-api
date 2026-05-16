@@ -227,5 +227,12 @@ public class GradeService : IGradeService
         }
     }
 
+    // helper for finding active course instances
+    private CourseInstance GetActiveInstanceOrThrow(string courseId)
+{
+        var instance = _courseInstanceRepository.GetActiveInstanceByCourseId(courseId) 
+        ?? throw new Exception("No active course instance found for this course.");
+        return instance;
+}
 
 }

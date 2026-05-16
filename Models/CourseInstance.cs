@@ -19,7 +19,7 @@ public class CourseInstance
     // Constructor with parameters  (used for creating new instances, ID is generated automatically)
     public CourseInstance(DateTime startDate, DateTime endDate, Course course, List<Student> students)
     {
-        CourseInstanceId = Guid.NewGuid().ToString();
+        CourseInstanceId = Guid.NewGuid().ToString()[..6];
         StartDate = startDate;
         EndDate = endDate;
         Course = course;

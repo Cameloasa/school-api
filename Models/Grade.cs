@@ -20,7 +20,7 @@ public class Grade
 
     public Grade(string value, CourseInstance courseInstance, Student student)
     {
-        GradeId = Guid.NewGuid().ToString();
+        GradeId = Guid.NewGuid().ToString()[..6];
         Value = value;
         CourseInstance = courseInstance;
         Student = student;
