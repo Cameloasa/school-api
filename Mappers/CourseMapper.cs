@@ -2,11 +2,12 @@ using SchoolApi.Models;
 using SchoolApi.Models.DTOs;
 
 namespace SchoolApi.Mappers;
+
 public static class CourseMapper
 {
-    public static CourseDTO ToDTO(Course c)
+    public static CourseResponse ToResponse(Course c)
     {
-        return new CourseDTO
+        return new CourseResponse
         {
             CourseId = c.CourseId,
             Title = c.Title,
@@ -14,3 +15,4 @@ public static class CourseMapper
         };
     }
 }
+

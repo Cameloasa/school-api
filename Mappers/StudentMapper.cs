@@ -5,13 +5,11 @@ namespace SchoolApi.Mappers;
 
 public static class StudentMapper
 {
-    public static StudentDTO ToDTO(Student s)
+    public static StudentResponse ToResponse(Student s)
     {
-        return new StudentDTO
+        return new StudentResponse
         {
             StudentId = s.StudentId,
-            FirstName = s.FirstName,
-            LastName = s.LastName,
             FullName = s.FullName,
             Email = s.Email
         };

@@ -1,16 +1,26 @@
 namespace SchoolApi.Services;
+
+using SchoolApi.Mappers;
 using SchoolApi.Models;
+using SchoolApi.Models.DTOs;
 using SchoolApi.Models.Requests;
 using SchoolApi.Repositories;
 
-public interface IStudentService{
-    List<Student> GetStudents();
-    Student? GetStudentById(string id);
-    Student CreateStudent(CreateStudentRequest request);
-    Student? UpdateStudent(string id, UpdateStudentRequest request);
-    bool DeleteStudent(string id);
+// =========================
+//      INTERFACE
+// =========================
+public interface IStudentService
+{
+    Task<List<StudentResponse>> GetStudentsAsync();
+    Task<StudentResponse?> GetStudentByIdAsync(string id);
+    Task<StudentResponse> CreateStudentAsync(CreateStudentRequest request, string userId);
+    Task<StudentResponse?> UpdateStudentAsync(string id, UpdateStudentRequest request);
+    Task<bool> DeleteStudentAsync(string id);
 }
 
+// =========================
+//      IMPLEMENTATION
+// =========================
 public class StudentService : IStudentService
 {
     private readonly IStudentRepository _studentRepository;
@@ -19,112 +29,47 @@ public class StudentService : IStudentService
     {
         _studentRepository = repo;
     }
-    
-    //get all students
-    public List<Student> GetStudents()
+
+    public async Task<List<StudentResponse>> GetStudentsAsync()
     {
-        try
-        {
-            return _studentRepository.GetAllStudents().ToList();
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException("An error occurred while retrieving students", ex);
-        }
+        var students = await _studentRepository.GetStudentsAsync();
+        return students.Select(StudentMapper.ToResponse).ToList();
     }
 
-    //get student by id
-    public Student? GetStudentById(string id)
+    public async Task<StudentResponse?> GetStudentByIdAsync(string id)
     {
-        try
-        {
-            // Validation
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                throw new ArgumentException("Student ID cannot be empty");
-            }
-            
-            return _studentRepository.GetStudentById(id);
-        }
-        catch (ArgumentException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"An error occurred while retrieving student with ID {id}", ex);
-        }
+        var student = await _studentRepository.GetStudentByIdAsync(id);
+        return student is null ? null : StudentMapper.ToResponse(student);
     }
 
-    //create student
-    public Student CreateStudent(CreateStudentRequest request)
+    public async Task<StudentResponse> CreateStudentAsync(CreateStudentRequest request, string userId)
     {
-        try
+        var student = new Student
         {
-            // Validations
-            if(_studentRepository.EmailExists(request.Email))
-            {
-                throw new ArgumentException("Email already exists");
-            }
-            
-            Student newStudent = new(request.Name, request.Email);
-            //save to repository
-            bool success = _studentRepository.AddStudent(newStudent);
-            
-            if (!success)
-            {
-                throw new InvalidOperationException("Failed to create student");
-            }
-           
-            
-            return newStudent;
-        }
-        catch (ArgumentException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException("An error occurred while creating the student", ex);
-        }
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Email = request.Email,
+            UserId = userId
+        };
+
+        var created = await _studentRepository.AddStudentAsync(student);
+        return StudentMapper.ToResponse(created);
     }
 
-    //update student
-    public Student? UpdateStudent(string id, UpdateStudentRequest request)
+    public async Task<StudentResponse?> UpdateStudentAsync(string id, UpdateStudentRequest request)
     {
-        try
-        {
-            return  _studentRepository.UpdateStudentName(id, request.Name);
-        }
-        catch (ArgumentException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"An error occurred while updating student with ID {id}", ex);
-        }
+        var student = await _studentRepository.GetStudentByIdAsync(id);
+        if (student is null) return null;
+
+        student.FirstName = request.FirstName;
+        student.LastName = request.LastName;
+
+        var updated = await _studentRepository.UpdateStudentAsync(student);
+        return updated is null ? null : StudentMapper.ToResponse(updated);
     }
 
-    //delete student
-    public bool DeleteStudent(string id)
+    public async Task<bool> DeleteStudentAsync(string id)
     {
-        try
-        {
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                throw new ArgumentException("Student ID cannot be empty");
-            }
-            
-            return _studentRepository.DeleteStudent(id);
-        }
-        catch (ArgumentException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"An error occurred while deleting student with ID {id}", ex);
-        }
+        return await _studentRepository.DeleteStudentAsync(id);
     }
 }

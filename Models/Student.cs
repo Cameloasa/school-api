@@ -12,6 +12,10 @@ public class Student
 
     public string FullName => $"{FirstName} {LastName}";
 
+    //user identity
+    public string? UserId { get; set; } 
+    public User? User { get; set; }
+
     public ICollection<CourseInstance> CourseInstances { get; set; } = new List<CourseInstance>();
     public ICollection<Grade> Grades { get; set; } = new List<Grade>();
 

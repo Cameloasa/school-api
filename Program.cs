@@ -9,29 +9,23 @@ using SchoolApi.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------------------
-// DATABASES
+// DATABASE (ONE DB ONLY)
 // ---------------------------
-
-// School database (Students, Courses, Grades)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseInMemoryDatabase("SchoolDb"));
-
-// Identity database (Users, Roles)
-builder.Services.AddDbContext<IdentityContext>(options =>
     options.UseInMemoryDatabase("SchoolDb"));
 
 // ---------------------------
 // IDENTITY
 // ---------------------------
 builder.Services.AddIdentity<User, IdentityRole>()
-    .AddEntityFrameworkStores<IdentityContext>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
 // ---------------------------
 // SERVICES & REPOSITORIES
 // ---------------------------
 
-// SCOPED, not Singleton
+// SCOPED
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<ICourseInstanceRepository, CourseInstanceRepository>();
@@ -55,6 +49,18 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// ---------------------------
+// DATABASE INIT
+// ---------------------------
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.EnsureCreated();
+}
+
+// ---------------------------
+// PIPELINE
+// ---------------------------
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

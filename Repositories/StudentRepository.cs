@@ -1,80 +1,67 @@
+using Microsoft.EntityFrameworkCore;
+using SchoolApi.Context;
 using SchoolApi.Models;
+
 namespace SchoolApi.Repositories;
 
+// =========================
+//      INTERFACE
+// =========================
 public interface IStudentRepository
 {
-    // Define methods for CRUD operations on Student entities
-    bool AddStudent(Student student);
-    Student? GetStudentById(string id);
-    IEnumerable<Student> GetAllStudents();
-    Student? UpdateStudentName(string studentId, string newName);
-    bool DeleteStudent(string id);
-    bool EmailExists(string email);
+    Task<Student> AddStudentAsync(Student student);
+    Task<Student?> GetStudentByIdAsync(string id);
+    Task<List<Student>> GetStudentsAsync();
+    Task<Student?> UpdateStudentAsync(Student student);
+    Task<bool> DeleteStudentAsync(string id);
 }
 
+// =========================
+//   EF CORE Implementation
+// =========================
 public class StudentRepository : IStudentRepository
 {
-    private  List<Student> students;
+    private readonly ApplicationDbContext _context;
 
-    public StudentRepository()
+    public StudentRepository(ApplicationDbContext context)
     {
-        students  = [
-        new ("John Doe", "john.doe@example.com"),
-        new ("Jane Smith", "jane.smith@example.com"),
-        new ("Alice Johnson", "alice.johnson@example.com"),
-        new ("Bob Brown", "bob.brown@example.com"),
-        new ("Charlie Davis", "charlie.davis@example.com")
-        ];
+        _context = context;
     }
 
-    // Create a new student
-    public bool AddStudent(Student student)
+    public async Task<Student> AddStudentAsync(Student student)
     {
-        if (student == null) return false;
-        
-        students.Add(student); return true;
-
+        _context.Students.Add(student);
+        await _context.SaveChangesAsync();
+        return student;
     }
 
-    // Read a student by ID
-    public Student? GetStudentById(string id)
+    public async Task<Student?> GetStudentByIdAsync(string id)
     {
-        return students.FirstOrDefault(s => s.StudentId == id);
+        return await _context.Students
+            .FirstOrDefaultAsync(s => s.StudentId == id);
     }
 
-    // Read all students
-    public IEnumerable<Student> GetAllStudents()
+    public async Task<List<Student>> GetStudentsAsync()
     {
-        return students;
+        return await _context.Students.ToListAsync();
     }
 
-    public Student? UpdateStudentName(string studentId, string newName)
+    public async Task<Student?> UpdateStudentAsync(Student student)
     {
-        Student? existing = GetStudentById(studentId);
-        if (existing == null)
-        {
-            return null;
-        }
-
-        existing.Name = newName;
-        return existing;
-        // save changes if using a real database context
+        _context.Students.Update(student);
+        await _context.SaveChangesAsync();
+        return student;
     }
 
-    // Delete a student by ID
-    public bool DeleteStudent(string id)
+    public async Task<bool> DeleteStudentAsync(string id)
     {
-        var student = GetStudentById(id);
-        if (student == null) return false;
-        
-        return students.Remove(student);
-    }
+        var student = await GetStudentByIdAsync(id);
+        if (student == null)
+            return false;
 
-    // Check if an email already exists in the repository
-    public bool EmailExists(string email)
-    {
-        return students.Any(s => s.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+        _context.Students.Remove(student);
+        await _context.SaveChangesAsync();
+        return true;
     }
 
 }
-
