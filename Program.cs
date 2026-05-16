@@ -1,38 +1,64 @@
 
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using SchoolApi.Context;
+using SchoolApi.Models;
 using SchoolApi.Repositories;
 using SchoolApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// ---------------------------
+// DATABASES
+// ---------------------------
+
+// School database (Students, Courses, Grades)
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseInMemoryDatabase("SchoolDb"));
+
+// Identity database (Users, Roles)
+builder.Services.AddDbContext<IdentityContext>(options =>
+    options.UseInMemoryDatabase("SchoolDb"));
+
+// ---------------------------
+// IDENTITY
+// ---------------------------
+builder.Services.AddIdentity<User, IdentityRole>()
+    .AddEntityFrameworkStores<IdentityContext>()
+    .AddDefaultTokenProviders();
+
+// ---------------------------
+// SERVICES & REPOSITORIES
+// ---------------------------
+
+// SCOPED, not Singleton
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<ICourseInstanceRepository, CourseInstanceRepository>();
+builder.Services.AddScoped<IGradeRepository, GradeRepository>();
+
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<ICourseInstanceService, CourseInstanceService>();
+builder.Services.AddScoped<IGradeService, GradeService>();
+
+// ---------------------------
+// API
+// ---------------------------
 builder.Services.AddControllers();
-builder.Services.AddSingleton<IStudentService, StudentService>();
-builder.Services.AddSingleton<ICourseService, CourseService>();
-builder.Services.AddSingleton<ICourseInstanceService, CourseInstanceService>();
-builder.Services.AddSingleton<IGradeService, GradeService>();
-builder.Services.AddSingleton<IStudentRepository, StudentRepository>();
-builder.Services.AddSingleton<ICourseRepository, CourseRepository>();
-builder.Services.AddSingleton<ICourseInstanceRepository, CourseInstanceRepository>();
-builder.Services.AddSingleton<IGradeRepository, GradeRepository>();
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-// redirect HTTP to HTTPS
 app.UseHttpsRedirection();
-
-//hello world endpoint
-app.MapGet("/hello", () => "Hello World!");
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
-
-
