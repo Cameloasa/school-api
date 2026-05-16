@@ -2,38 +2,17 @@ namespace SchoolApi.Models;
 
 public class CourseInstance
 {
-    public string CourseInstanceId { get; set; }
+    public string CourseInstanceId { get; set; } = Guid.NewGuid().ToString()[..6];
+
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
+
+    public string CourseId { get; set; } = string.Empty;
     public Course Course { get; set; }
-    public List<Student> Students { get; set; }
 
-    public CourseInstance()
+    public ICollection<Student> Students { get; set; } = new List<Student>();
+    public ICollection<Grade> Grades { get; set; } = new List<Grade>();
 
-    {
-        CourseInstanceId = Guid.NewGuid().ToString()[..6];
-        Students = [];
-        Course = new Course();
-    }
-
-    // Constructor with parameters  (used for creating new instances, ID is generated automatically)
-    public CourseInstance(DateTime startDate, DateTime endDate, Course course, List<Student> students)
-    {
-        CourseInstanceId = Guid.NewGuid().ToString()[..6];
-        StartDate = startDate;
-        EndDate = endDate;
-        Course = course;
-        Students = students;
-    }
-    
-    // Update constructor (takes existing ID)
-    public CourseInstance(string id, DateTime startDate, DateTime endDate, Course course, List<Student> students)
-    {
-    
-        CourseInstanceId = id;
-        StartDate = startDate;
-        EndDate = endDate;
-        Course = course;
-        Students = students;
-    }
+    // EF Core needs only this:
+    public CourseInstance() {}
 }
