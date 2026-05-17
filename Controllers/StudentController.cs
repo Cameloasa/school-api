@@ -1,113 +1,93 @@
 using Microsoft.AspNetCore.Mvc;
-using SchoolApi.Models;
+using SchoolApi.Models.DTOs;
 using SchoolApi.Models.Requests;
 using SchoolApi.Services;
 
 [ApiController]
 [Route("students")]
-public class StudentController(IStudentService service):ControllerBase
+public class StudentController : ControllerBase
 {
-    private readonly IStudentService _service = service;
+    private readonly IStudentService _service;
 
-    [HttpGet]
-    public ActionResult<List<Student>> GetStudents()
+    public StudentController(IStudentService service)
     {
-        try{
-        return Ok(_service.GetStudents());
-        }
-        catch(Exception)
-        {
-            return StatusCode(500,"An error occured while processing the request");
-        }
+        _service = service;
     }
 
+    // GET /students
     [HttpGet]
-    [Route("{id}")]
-    public ActionResult<Student?> GetStudentById(string id)
-
+    public async Task<ActionResult<List<StudentResponse>>> GetStudents()
     {
-        try{
-            Student? found = _service.GetStudentById(id);
-
-            if(found == null)
-            {
-            return NotFound($"Student with id {id} not found");
-            }  
-        return Ok(found); 
-        }
-        
-        catch(Exception)
-        {
-            return StatusCode(500,"An error occured while processing the request");
-        }
-    }
-
-    [HttpPost]
-    public ActionResult<Student?> CreateStudent([FromBody]CreateStudentRequest request)
-    {
-        if(!ModelState.IsValid)
-        {
-            return ValidationProblem(ModelState);
-        }
         try
         {
-            Student newStudent = _service.CreateStudent(request);
-            return Created("/students", newStudent);
+            var students = await _service.GetStudentsAsync();
+            return Ok(students);
         }
-        catch(Exception)
-        {
-            return StatusCode(500,"An error occured while processing the request ");
-        }
-    }
-
-    [HttpPatch]
-    [Route("{id}")]
-    public ActionResult<Student?> UpdateStudent(string id, [FromBody]UpdateStudentRequest request)
-    {
-        // 1. Validate ID
-        if (string.IsNullOrWhiteSpace(id))
-            return BadRequest("Invalid student ID");
-
-        // 2. Validate body
-        if (!ModelState.IsValid)
-            return ValidationProblem(ModelState);
-
-        try
-        {
-            // 3. Call service
-            Student? updatedStudent = _service.UpdateStudent(id, request);
-
-            if (updatedStudent == null)
-                return NotFound($"Student with id {id} not found");
-
-            return Ok(updatedStudent);
-        }
-        catch (Exception)
+        catch
         {
             return StatusCode(500, "An error occurred while processing the request");
         }
     }
 
-    [HttpDelete]
-    [Route("{id}")]
-    public ActionResult DeleteStudent(string id)
+    // GET /students/{id}
+    [HttpGet("{id}")]
+    public async Task<ActionResult<StudentResponse>> GetStudentById(string id)
     {
         try
         {
-            Student? found = _service.GetStudentById(id);
-            if (found == null)
-            {
-                return NotFound($"student with id {id} not found");
-            }
-            _service.DeleteStudent(id);
-            return Ok();
+            var student = await _service.GetStudentByIdAsync(id);
+            if (student == null)
+                return NotFound($"Student with id {id} not found");
 
+            return Ok(student);
         }
-        catch(Exception)
+        catch
         {
-            return StatusCode(500,"An error occured while processing the request ");
+            return StatusCode(500, "An error occurred while processing the request");
         }
     }
 
-    
+    // PATCH /students/{id}
+    [HttpPatch("{id}")]
+    public async Task<ActionResult<StudentResponse>> UpdateStudent(
+        string id,
+        [FromBody] UpdateStudentRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return BadRequest("Invalid student ID");
+
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
+
+        try
+        {
+            var updated = await _service.UpdateStudentAsync(id, request);
+            if (updated == null)
+                return NotFound($"Student with id {id} not found");
+
+            return Ok(updated);
+        }
+        catch
+        {
+            return StatusCode(500, "An error occurred while processing the request");
+        }
+    }
+
+    // DELETE /students/{id}
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteStudent(string id)
+    {
+        try
+        {
+            var deleted = await _service.DeleteStudentAsync(id);
+            if (!deleted)
+                return NotFound($"Student with id {id} not found");
+
+            return Ok();
+        }
+        catch
+        {
+            return StatusCode(500, "An error occurred while processing the request");
+        }
+    }
 }
