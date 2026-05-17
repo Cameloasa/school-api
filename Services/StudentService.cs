@@ -30,18 +30,27 @@ public class StudentService : IStudentService
         _studentRepository = repo;
     }
 
+    //get all
     public async Task<List<StudentResponse>> GetStudentsAsync()
     {
+        try{
         var students = await _studentRepository.GetStudentsAsync();
         return students.Select(StudentMapper.ToResponse).ToList();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("An error occurred while retrieving students", ex);
+        }  
     }
 
+    //get by id
     public async Task<StudentResponse?> GetStudentByIdAsync(string id)
     {
         var student = await _studentRepository.GetStudentByIdAsync(id);
         return student is null ? null : StudentMapper.ToResponse(student);
     }
 
+    //create
     public async Task<StudentResponse> CreateStudentAsync(CreateStudentRequest request, string userId)
     {
         var student = new Student
@@ -56,6 +65,7 @@ public class StudentService : IStudentService
         return StudentMapper.ToResponse(created);
     }
 
+    //update
     public async Task<StudentResponse?> UpdateStudentAsync(string id, UpdateStudentRequest request)
     {
         var student = await _studentRepository.GetStudentByIdAsync(id);

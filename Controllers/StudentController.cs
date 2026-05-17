@@ -3,6 +3,7 @@ using SchoolApi.Models.DTOs;
 using SchoolApi.Models.Requests;
 using SchoolApi.Services;
 
+namespace SchoolApi.Controllers;
 [ApiController]
 [Route("students")]
 public class StudentController : ControllerBase

@@ -1,18 +1,28 @@
-//Services/CourseService.cs
-namespace SchoolApi.Services;
+
+using SchoolApi.Mappers;
 using SchoolApi.Models;
+using SchoolApi.Models.DTOs;
 using SchoolApi.Models.Requests;
 using SchoolApi.Repositories;
 
+namespace SchoolApi.Services;
+
+
+// =========================
+//      INTERFACE
+// =========================
 public interface ICourseService
 {
-    List<Course> GetCourses();
-    Course? GetCourseById(string id);
-    Course CreateCourse(CreateCourseRequest request);
-    Course? UpdateCourse(string id, UpdateCourseRequest request);
-    bool DeleteCourse(string id);
+    Task<List<CourseResponse>> GetCoursesAsync();
+    Task<CourseResponse?> GetCourseByIdAsync(string id);
+    Task<CourseResponse> CreateCourseAsync(CreateCourseRequest request);
+    Task<CourseResponse?> UpdateCourseAsync(string id, UpdateCourseRequest request);
+    Task<bool> DeleteCourseAsync(string id);
 }
 
+// =========================
+//      IMPLEMENTATION
+// =========================
 public class CourseService : ICourseService
 {
     private readonly ICourseRepository _courseRepository;
@@ -22,108 +32,46 @@ public class CourseService : ICourseService
         _courseRepository = repo;
     }
 
-    //get all courses
-    public List<Course> GetCourses()
+    public async Task<List<CourseResponse>> GetCoursesAsync()
     {
-        try{
-            return _courseRepository.GetAllCourses().ToList();
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException("An error occurred while retrieving courses", ex);
-        }      
+        var courses = await _courseRepository.GetCoursesAsync();
+        return courses.Select(CourseMapper.ToResponse).ToList();
     }
 
-    //get course by id
-    public Course? GetCourseById(string id)
+    public async Task<CourseResponse?> GetCourseByIdAsync(string id)
     {
-        try
-        {
-            // Validation
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                throw new ArgumentException("Course ID cannot be empty");
-            }
-            
-            return _courseRepository.GetCourseById(id);
-        }
-        catch (ArgumentException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"An error occurred while retrieving course with ID {id}", ex);
-        }
+        var course = await _courseRepository.GetCourseByIdAsync(id);
+        return course is null ? null : CourseMapper.ToResponse(course);
     }
 
-    //create course
-    public Course CreateCourse(CreateCourseRequest request)
+    public async Task<CourseResponse> CreateCourseAsync(CreateCourseRequest request)
     {
-        try
+        var course = new Course
         {
-           
-            Course newCourse = new(request.Description, request.Title);
+            Title = request.Title,
+            Description = request.Description
+        };
 
-                //save to repository
-            bool success = _courseRepository.AddCourse(newCourse);
-
-            if (!success)
-            {
-                throw new InvalidOperationException("Failed to create course");
-            }
-            return newCourse;
-        }
-        catch (ArgumentException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException("An error occurred while creating the course", ex);
-        }   
+        var created = await _courseRepository.AddCourseAsync(course);
+        return CourseMapper.ToResponse(created);
     }
 
-    //update course
-    public Course? UpdateCourse(string id, UpdateCourseRequest request)
+    public async Task<CourseResponse?> UpdateCourseAsync(string id, UpdateCourseRequest request)
     {
-        try
-        {
-            
-            return _courseRepository.UpdateCourseDescription(id, request.Description);
-           
-        }
-        catch (ArgumentException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"An error occurred while updating course with ID {id}", ex);
-        }
-        
+        var course = await _courseRepository.GetCourseByIdAsync(id);
+        if (course == null) return null;
+
+        // PATCH logic
+
+        if (!string.IsNullOrWhiteSpace(request.Description))
+            course.Description = request.Description;
+
+        var updated = await _courseRepository.UpdateCourseAsync(course);
+        return updated is null ? null : CourseMapper.ToResponse(updated);
     }
 
-    //delete course
-    public bool DeleteCourse(string id)
+    public async Task<bool> DeleteCourseAsync(string id)
     {
-        try
-        {
-            // Validation
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                throw new ArgumentException("Course ID cannot be empty");
-            }
-            
-            return _courseRepository.DeleteCourse(id);
-        }
-        catch (ArgumentException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"An error occurred while deleting course with ID {id}", ex);
-        }
+        return await _courseRepository.DeleteCourseAsync(id);
     }
 }

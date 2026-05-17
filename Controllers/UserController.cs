@@ -12,7 +12,8 @@ namespace SchoolApi.Controllers;
 public class UserController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
-    private UserController(UserManager<User> userManager){
+
+    public UserController(UserManager<User> userManager){
         _userManager = userManager;
     }
 

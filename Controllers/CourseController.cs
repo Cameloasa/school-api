@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using SchoolApi.Models;
+using SchoolApi.Models.DTOs;
 using SchoolApi.Models.Requests;
 using SchoolApi.Services;
+
+namespace SchoolApi.Controllers;
 
 [ApiController]
 [Route("courses")]
@@ -11,24 +13,34 @@ public class CourseController(ICourseService service) : ControllerBase
     private readonly ICourseService _service = service;
 
 
+    //get(courses)
     [HttpGet]
-    public ActionResult<List<Course>> GetCourses()
-    {
-        return Ok(_service.GetCourses());
-    }
-
-    [HttpGet]
-    [Route("{id}")]
-    public ActionResult<Course?> GetCourseById(string id)
+    public async Task<ActionResult<List<CourseResponse>>> GetCourses()
     {
         try
         {
-            Course? found = _service.GetCourseById(id);
-            if(found == null)
+            var courses = await _service.GetCoursesAsync();
+            return Ok(courses);
+        }
+        catch
+        {
+            return StatusCode(500, "An error occurred while processing the request");
+        }
+    }
+
+    // Get /courses/{id}
+    [HttpGet]
+    [Route("{id}")]
+    public async Task<ActionResult<CourseResponse>> GetCourseById(string id)
+    {
+        try
+        {
+            var course = _service.GetCourseByIdAsync(id);
+            if(course == null)
             {
                 return NotFound($"Course with id {id} not found");
             }
-            return Ok(found);
+            return Ok(course);
         }
         catch (Exception)
         {
@@ -36,8 +48,10 @@ public class CourseController(ICourseService service) : ControllerBase
         }
     }
 
+    //Post /courses
     [HttpPost]
-    public ActionResult<Course?> CreateCourse([FromBody]CreateCourseRequest request)
+    public async Task<ActionResult<CourseResponse>> CreateCourse(
+        [FromBody]CreateCourseRequest request)
     {
         if(!ModelState.IsValid)
         {
@@ -45,8 +59,8 @@ public class CourseController(ICourseService service) : ControllerBase
         }
         try
         {
-            Course newCourse = _service.CreateCourse(request);
-            return Created("/courses", newCourse);
+            var course = await _service.CreateCourseAsync(request);
+            return Created("/courses", course);
         }
         catch (Exception)
         {
@@ -54,28 +68,31 @@ public class CourseController(ICourseService service) : ControllerBase
         }
     }
 
+    // Patch /courses/{id}
     [HttpPatch]
     [Route("{id}")]
-    public ActionResult<Course> UpdateCourse(string id, [FromBody]UpdateCourseRequest request)
+    public async Task<ActionResult<CourseResponse>> UpdateCourse(
+        string id,
+        [FromBody] UpdateCourseRequest request)
     {
-            // Validate id
+        // Validate id
         if(string.IsNullOrEmpty(id))
         {
-                return BadRequest("Id is required");
-            }
-            // Validate request body
+            return BadRequest("Id is required");
+        }
+        // Validate request body
         if(!ModelState.IsValid)
-            {
-                return ValidationProblem(ModelState);
-            }
+        {
+            return ValidationProblem(ModelState);
+        }
         try        
         {
             //Call service to update course
-            Course? updatedCourse = _service.UpdateCourse(id, request);
-            if(updatedCourse == null)            {
+            var updated = _service.UpdateCourseAsync(id, request);
+            if(updated == null) 
                 return NotFound($"Course with id {id} not found");
-            }
-            return Ok(updatedCourse);
+            
+            return Ok(updated);
         }
         catch (Exception)
         {
@@ -83,18 +100,16 @@ public class CourseController(ICourseService service) : ControllerBase
         }
     }
 
-    [HttpDelete]
-    [Route("{id}")]
-    public ActionResult DeleteCourse(string id)
+    //delete /courses/{id}
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteCourse(string id)
     {
         try
         {
-            Course? found = _service.GetCourseById(id);
-            if(found == null)
-            {
-                return NotFound($"Course with id {id} not found");
-            }
-            _service.DeleteCourse(id);
+            var deleted = await _service.DeleteCourseAsync(id);
+            if (!deleted)
+                return NotFound($"Student with id {id} not found");
+
             return Ok();
 
         }

@@ -28,6 +28,7 @@ public class StudentRepository : IStudentRepository
         _context = context;
     }
 
+    //create
     public async Task<Student> AddStudentAsync(Student student)
     {
         _context.Students.Add(student);
@@ -35,17 +36,22 @@ public class StudentRepository : IStudentRepository
         return student;
     }
 
+    //get by id
     public async Task<Student?> GetStudentByIdAsync(string id)
     {
-        return await _context.Students
-            .FirstOrDefaultAsync(s => s.StudentId == id);
+        return await _context
+                    .Students
+                    .FirstOrDefaultAsync(s => s.StudentId == id);
     }
 
+    //get all
     public async Task<List<Student>> GetStudentsAsync()
     {
-        return await _context.Students.ToListAsync();
+        return await _context
+                    .Students.ToListAsync();
     }
 
+    //update
     public async Task<Student?> UpdateStudentAsync(Student student)
     {
         _context.Students.Update(student);
