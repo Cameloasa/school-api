@@ -11,9 +11,15 @@ public static class GradeMapper
         {
             GradeId = g.GradeId,
             Value = g.Value,
-            StudentId = g.Student.StudentId,
-            CourseInstanceId = g.CourseInstance.CourseInstanceId
+
+            StudentId = g.StudentId,
+            StudentFirstName = g.Student?.FirstName?? "Unknown",
+            StudentLastName = g.Student?.LastName?? "Unknown",
+
+            CourseInstanceId = g.CourseInstanceId,
+            CourseTitle = g.CourseInstance?.Course?.Title ?? "Unknown"
         };
     }
 }
+
 

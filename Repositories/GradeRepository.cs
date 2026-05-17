@@ -1,4 +1,5 @@
-
+using Microsoft.EntityFrameworkCore;
+using SchoolApi.Context;
 using SchoolApi.Models;
 
 namespace SchoolApi.Repositories;
@@ -22,39 +23,83 @@ public interface IGradeRepository
 // =========================
 public class GradeRepository : IGradeRepository
 {
-    public Task<Grade> AddGradeAsync(Grade grade)
+    private readonly ApplicationDbContext _context;
+
+    public GradeRepository(ApplicationDbContext context)
     {
-        throw new NotImplementedException();
+        _context = context;
     }
 
-    public Task<bool> DeleteGradeAsync(string id)
+    // GET ALL
+    public async Task<List<Grade>> GetGradesAsync()
     {
-        throw new NotImplementedException();
+        return await _context
+                .Grades
+                .Include(g => g.Student)
+                .Include(g => g.CourseInstance)
+                .ThenInclude(ci => ci.Course)
+                .ToListAsync();
     }
 
-    public Task<Grade?> GetGradeByIdAsync(string id)
+    // GET BY ID
+    public async Task<Grade?> GetGradeByIdAsync(string id)
     {
-        throw new NotImplementedException();
+        return await _context
+                .Grades
+                .Include(g => g.Student)
+                .Include(g => g.CourseInstance)
+                .ThenInclude(ci => ci.Course)
+                .FirstOrDefaultAsync(g => g.GradeId == id);
     }
 
-    public Task<List<Grade>> GetGradesAsync()
+    // GET BY STUDENT
+    public async Task<List<Grade>> GetGradesByStudentIdAsync(string studentId)
     {
-        throw new NotImplementedException();
+        return await _context.Grades
+            .Where(g => g.StudentId == studentId)
+            .Include(g => g.Student)
+            .Include(g => g.CourseInstance)
+                .ThenInclude(ci => ci.Course)
+            .ToListAsync();
     }
 
-    public Task<List<Grade>> GetGradesByCourseInstanceIdAsync(string courseInstanceId)
+    // GET BY COURSE INSTANCE
+    public async Task<List<Grade>> GetGradesByCourseInstanceIdAsync(string courseInstanceId)
     {
-        throw new NotImplementedException();
+        return await _context.Grades
+            .Where(g => g.CourseInstanceId == courseInstanceId)
+            .Include(g => g.Student)
+            .Include(g => g.CourseInstance)
+                .ThenInclude(ci => ci.Course)
+            .ToListAsync();
     }
 
-    public Task<List<Grade>> GetGradesByStudentIdAsync(string studentId)
+    // CREATE
+    public async Task<Grade> AddGradeAsync(Grade grade)
     {
-        throw new NotImplementedException();
+        _context.Grades.Add(grade);
+        await _context.SaveChangesAsync();
+        return grade;
     }
 
-    public Task<Grade?> UpdateGradeAsync(Grade grade)
+    // UPDATE
+    public async Task<Grade?> UpdateGradeAsync(Grade grade)
     {
-        throw new NotImplementedException();
+        _context.Grades.Update(grade);
+        await _context.SaveChangesAsync();
+        return grade;
+    }
+
+    // DELETE
+    public async Task<bool> DeleteGradeAsync(string id)
+    {
+        var grade = await _context.Grades.FindAsync(id);
+        if (grade == null)
+            return false;
+
+        _context.Grades.Remove(grade);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }
 

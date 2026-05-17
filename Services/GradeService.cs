@@ -1,4 +1,6 @@
 
+using SchoolApi.Mappers;
+using SchoolApi.Models;
 using SchoolApi.Models.DTOs;
 using SchoolApi.Models.Requests;
 using SchoolApi.Repositories;
@@ -25,38 +27,91 @@ public interface IGradeService
 // =========================
 public class GradeService : IGradeService
 {
-    public Task<GradeResponse> CreateGradeAsync(CreateGradeRequest request)
+    private readonly IGradeRepository _gradeRepo;
+    private readonly IStudentRepository _studentRepo;
+    private readonly ICourseInstanceRepository _courseInstanceRepo;
+
+    public GradeService(
+        IGradeRepository gradeRepo,
+        IStudentRepository studentRepo,
+        ICourseInstanceRepository courseInstanceRepo)
     {
-        throw new NotImplementedException();
+        _gradeRepo = gradeRepo;
+        _studentRepo = studentRepo;
+        _courseInstanceRepo = courseInstanceRepo;
     }
 
-    public Task<bool> DeleteGradeAsync(string id)
+    // GET ALL
+    public async Task<List<GradeResponse>> GetGradesAsync()
     {
-        throw new NotImplementedException();
+        var grades = await _gradeRepo.GetGradesAsync();
+        return grades.Select(GradeMapper.ToResponse).ToList();
     }
 
-    public Task<GradeResponse?> GetGradeByIdAsync(string id)
+    // GET BY ID
+    public async Task<GradeResponse?> GetGradeByIdAsync(string id)
     {
-        throw new NotImplementedException();
+        var grade = await _gradeRepo.GetGradeByIdAsync(id);
+        return grade is null ? null : GradeMapper.ToResponse(grade);
     }
 
-    public Task<List<GradeResponse>> GetGradesAsync()
+    // GET BY STUDENT
+    public async Task<List<GradeResponse>> GetGradesByStudentIdAsync(string studentId)
     {
-        throw new NotImplementedException();
+        var grades = await _gradeRepo.GetGradesByStudentIdAsync(studentId);
+        return grades.Select(GradeMapper.ToResponse).ToList();
     }
 
-    public Task<List<GradeResponse>> GetGradesByCourseInstanceIdAsync(string courseInstanceId)
+    // GET BY COURSE INSTANCE
+    public async Task<List<GradeResponse>> GetGradesByCourseInstanceIdAsync(string courseInstanceId)
     {
-        throw new NotImplementedException();
+        var grades = await _gradeRepo.GetGradesByCourseInstanceIdAsync(courseInstanceId);
+        return grades.Select(GradeMapper.ToResponse).ToList();
     }
 
-    public Task<List<GradeResponse>> GetGradesByStudentIdAsync(string studentId)
+    // CREATE
+    public async Task<GradeResponse> CreateGradeAsync(CreateGradeRequest request)
     {
-        throw new NotImplementedException();
+        // 1. Validate student
+        var student = await _studentRepo.GetStudentByIdAsync(request.StudentId);
+        if (student == null)
+            throw new Exception("Student not found");
+
+        // 2. Validate course instance
+        var instance = await _courseInstanceRepo.GetInstanceByIdAsync(request.CourseInstanceId);
+        if (instance == null)
+            throw new Exception("Course instance not found");
+
+        // 3. Create grade
+        var grade = new Grade
+        {
+            Value = request.Value,
+            StudentId = request.StudentId,
+            CourseInstanceId = request.CourseInstanceId
+        };
+
+        var created = await _gradeRepo.AddGradeAsync(grade);
+
+        return GradeMapper.ToResponse(created);
     }
 
-    public Task<GradeResponse?> UpdateGradeAsync(string id, UpdateGradeRequest request)
+    // UPDATE
+    public async Task<GradeResponse?> UpdateGradeAsync(string id, UpdateGradeRequest request)
     {
-        throw new NotImplementedException();
+        var existing = await _gradeRepo.GetGradeByIdAsync(id);
+        if (existing == null)
+            return null;
+
+        existing.Value = request.Value;
+
+        var updated = await _gradeRepo.UpdateGradeAsync(existing);
+
+        return GradeMapper.ToResponse(updated!);
+    }
+
+    // DELETE
+    public async Task<bool> DeleteGradeAsync(string id)
+    {
+        return await _gradeRepo.DeleteGradeAsync(id);
     }
 }
