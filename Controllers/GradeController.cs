@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using SchoolApi.Models;
 using SchoolApi.Models.Requests;
 using SchoolApi.Services;
 
@@ -7,166 +6,101 @@ namespace SchoolApi.Controllers;
 
 [ApiController]
 [Route("grades")]
-public class GradeController(IGradeService service) : ControllerBase
+public class GradeController : ControllerBase
 {
-    private readonly IGradeService _service = service;
+    private readonly IGradeService _service;
+
+    public GradeController(IGradeService service)
+    {
+        _service = service;
+    }
+
     // GET: /grades
     [HttpGet]
-    public ActionResult<IEnumerable<Grade>> GetAllGrades()
+    public async Task<ActionResult> GetAllGrades()
     {
-        try
-        {
-            return Ok(_service.GetGrades());
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
+        var grades = await _service.GetGradesAsync();
+        return Ok(grades);
     }
 
     // GET: /grades/{id}
     [HttpGet("{id}")]
-    public ActionResult<Grade?> GetById(string id)
+    public async Task<ActionResult> GetById(string id)
     {
-        try
-        {
-            Grade? found = _service.GetGradeById(id);
-            if (found == null)
-            {
-                return NotFound($"Grade with ID {id} not found");
-            }
-            return Ok(found);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
+        var grade = await _service.GetGradeByIdAsync(id);
+
+        if (grade == null)
+            return NotFound($"Grade with ID {id} not found");
+
+        return Ok(grade);
     }
 
     // GET: /grades/student/{studentId}
-    [HttpGet]
-    [Route("student/{studentId}")]
-    public ActionResult<IEnumerable<Grade>> GetByStudent(string studentId)
+    [HttpGet("student/{studentId}")]
+    public async Task<ActionResult> GetByStudent(string studentId)
     {
-        try
-        {
-            IEnumerable<Grade> found = _service.GetGradesByStudent(studentId);
-            if (found == null || !found.Any())
-            {
-                return NotFound($"No grades found for student with ID {studentId}");
-            }
-            return Ok(found);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
+        var grades = await _service.GetGradesByStudentIdAsync(studentId);
+
+        if (!grades.Any())
+            return NotFound($"No grades found for student {studentId}");
+
+        return Ok(grades);
     }
 
     // GET: /grades/course-instance/{courseInstanceId}
-    [HttpGet]
-    [Route("course-instance/{courseInstanceId}")]
-    public ActionResult<IEnumerable<Grade>> GetByCourseInstance(string courseInstanceId)
+    [HttpGet("course-instance/{courseInstanceId}")]
+    public async Task<ActionResult> GetByCourseInstance(string courseInstanceId)
     {
-        try
-        {
-            IEnumerable<Grade> found = _service.GetGradesByCourseInstance(courseInstanceId);
-            if (found == null || !found.Any())
-            {
-                return NotFound($"No grades found for course instance with ID {courseInstanceId}");
-            }
-            return Ok(found);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
-    }
+        var grades = await _service.GetGradesByCourseInstanceIdAsync(courseInstanceId);
 
-    // GET: /grades/student/{studentId}/course-instance/{courseInstanceId}
-    [HttpGet]
-    [Route("student/{studentId}/course-instance/{courseInstanceId}")]
-    public ActionResult<Grade> GetByStudentAndCourseInstance(string studentId, string courseInstanceId)
-    {
-        try
-        {
-            Grade? found = _service.GetGradeByStudentAndCourseInstance(studentId, courseInstanceId);
-            if (found == null)
-            {
-                return NotFound($"Grade not found for student {studentId} and course instance {courseInstanceId}");
-            }
-            return Ok(found);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
+        if (!grades.Any())
+            return NotFound($"No grades found for course instance {courseInstanceId}");
+
+        return Ok(grades);
     }
 
     // POST: /grades
     [HttpPost]
-    public ActionResult<List<Grade>> CreateGrade([FromBody] CreateGradeRequest request)
+    public async Task<ActionResult> CreateGrade([FromBody] CreateGradeRequest request)
     {
-        if(!ModelState.IsValid)
-        {
+        if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
-        }
+
         try
         {
-            List<Grade> newGrades = _service.CreateGrade(request);
-            return Created("/grades", newGrades);
+            var created = await _service.CreateGradeAsync(request);
+            return Created("/grades", created);
         }
-        catch (ArgumentException ex)
+        catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
     }
 
-    // /grades/student/{studentId}/course/{courseId}
-    [HttpPatch("student/{studentId}/course/{courseId}")]
-    public ActionResult<Grade?> UpdateGrade(
-        string studentId,
-        string courseId,
-        [FromBody] UpdateGradeRequest request)
-        {
-            if (!ModelState.IsValid)
-                return ValidationProblem(ModelState);
+    // PATCH: /grades/{id}
+    [HttpPatch("{id}")]
+    public async Task<ActionResult> UpdateGrade(string id, [FromBody] UpdateGradeRequest request)
+    {
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
 
-            Grade? updated = _service.UpdateGradeValue(studentId, courseId, request);
+        var updated = await _service.UpdateGradeAsync(id, request);
 
-            if (updated == null)
-                return NotFound("Grade not found for this student and course");
+        if (updated == null)
+            return NotFound($"Grade with ID {id} not found");
 
-            return Ok(updated);
-        }
-
-
+        return Ok(updated);
+    }
 
     // DELETE: /grades/{id}
     [HttpDelete("{id}")]
-    public ActionResult Delete(string id)
+    public async Task<ActionResult> Delete(string id)
     {
-        try
-        {
-            Grade? found = _service.GetGradeById(id);
-            if (found == null)
-            {
-                return NotFound($"Grade with ID {id} not found");
-            }
-            _service.DeleteGrade(id);
-            return NoContent();
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
-        }
+        var deleted = await _service.DeleteGradeAsync(id);
+
+        if (!deleted)
+            return NotFound($"Grade with ID {id} not found");
+
+        return NoContent();
     }
 }
