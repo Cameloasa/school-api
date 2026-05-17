@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using SchoolApi.Context;
 using SchoolApi.Models;
 using SchoolApi.Models.Requests;
+using SchoolApi.Services;
 
 namespace SchoolApi.Controllers;
 
@@ -9,11 +11,12 @@ namespace SchoolApi.Controllers;
 [Route("auth")]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<User> _userManager;
+    private readonly IAuthService _authService;
 
-    public AuthController(UserManager<User> userManager)
+
+    public AuthController(IAuthService authService)
     {
-        _userManager = userManager;
+        _authService = authService;
     }
 
     // ---------------------------
@@ -25,26 +28,15 @@ public class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
 
-        // 1. Check if user exists
-        var existing = await _userManager.FindByEmailAsync(request.Email);
-        if (existing != null)
-            return BadRequest("A user with this email already exists");
-
-        // 2. Create user
-        var user = new User
+        try
         {
-            Email = request.Email,
-            UserName = request.Email,
-            FirstName = request.FirstName,
-            LastName = request.LastName
-        };
-
-        var result = await _userManager.CreateAsync(user, request.Password);
-
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
-
-        return Ok("User registered successfully");
+            await _authService.RegisterAsync(request);
+            return Ok("User registered successfully");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     // ---------------------------
@@ -56,12 +48,9 @@ public class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
 
-        var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user == null)
-            return Unauthorized("Invalid email or password");
+        var valid = await _authService.ValidateUserAsync(request);
 
-        var validPassword = await _userManager.CheckPasswordAsync(user, request.Password);
-        if (!validPassword)
+        if (!valid)
             return Unauthorized("Invalid email or password");
 
         return Ok("Login successful");

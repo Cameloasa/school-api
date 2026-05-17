@@ -36,6 +36,8 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ICourseInstanceService, CourseInstanceService>();
 builder.Services.AddScoped<IGradeService, GradeService>();
 
+builder.Services.AddScoped<IAuthService, AuthService>();
+
 // ---------------------------
 // API
 // ---------------------------

@@ -14,6 +14,9 @@ public interface ICourseRepository
     Task<List<Course>> GetCoursesAsync();
     Task<Course?> UpdateCourseAsync(Course course);
     Task<bool> DeleteCourseAsync(string id);
+    Task<Course?> GetByTitleAsync(string title);
+
+
 }
 
 // =========================
@@ -71,5 +74,11 @@ public class CourseRepository : ICourseRepository
         _context.Courses.Remove(course);
         await _context.SaveChangesAsync();
         return true;
-    }   
+    }  
+
+    public async Task<Course?> GetByTitleAsync(string title)
+    {
+        return await _context.Courses
+            .FirstOrDefaultAsync(c => c.Title.ToLower() == title.ToLower());
+    } 
 }

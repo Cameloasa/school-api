@@ -50,6 +50,9 @@ public class CourseService : ICourseService
     //create
     public async Task<CourseResponse> CreateCourseAsync(CreateCourseRequest request)
     {
+        var existing = await _courseRepository.GetByTitleAsync(request.Title);
+        if (existing != null)
+        throw new Exception($"A course with title '{request.Title}' already exists");
         var course = new Course
         {
             Title = request.Title,

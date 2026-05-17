@@ -17,6 +17,10 @@ public interface ICourseInstanceRepository
 
     // Extra (util):
     Task<List<CourseInstance>> GetInstancesByCourseIdAsync(string courseId);
+    Task<CourseInstance?> GetByCourseAndDatesAsync(
+    string courseId,
+    DateTime start,
+    DateTime end);
 }
 // =========================
 //   EF CORE Implementation
@@ -96,5 +100,18 @@ public class CourseInstanceRepository : ICourseInstanceRepository
         await _context.SaveChangesAsync();
         return instance;
     }
+
+    public async Task<CourseInstance?> GetByCourseAndDatesAsync(
+    string courseId,
+    DateTime start,
+    DateTime end)
+{
+    return await _context.CourseInstances
+        .FirstOrDefaultAsync(ci =>
+            ci.CourseId == courseId &&
+            ci.StartDate == start &&
+            ci.EndDate == end
+        );
+}
 }
 

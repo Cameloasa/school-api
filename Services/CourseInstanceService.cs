@@ -43,6 +43,14 @@ public class CourseInstanceService : ICourseInstanceService
     // create
     public async Task<CourseInstanceResponse> CreateInstanceAsync(CreateCourseInstanceRequest request)
     {
+        var existingInstance = await _courseInstanceRepository.GetByCourseAndDatesAsync(
+            request.CourseId,
+            request.StartDate,
+            request.EndDate
+        );
+
+        if (existingInstance != null)
+        throw new Exception("This course already has an instance in the same date range.");
         // 1. course validation
         var course = await _courseRepository.GetCourseByIdAsync(request.CourseId);
         if (course == null)

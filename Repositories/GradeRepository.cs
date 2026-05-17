@@ -17,6 +17,7 @@ public interface IGradeRepository
     Task<Grade> AddGradeAsync(Grade grade);
     Task<Grade?> UpdateGradeAsync(Grade grade);
     Task<bool> DeleteGradeAsync(string id);
+
 }
 // =========================
 //   EF CORE Implementation
@@ -101,6 +102,8 @@ public class GradeRepository : IGradeRepository
         await _context.SaveChangesAsync();
         return true;
     }
+
+
 }
 
 
