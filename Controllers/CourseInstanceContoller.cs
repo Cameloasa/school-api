@@ -1,167 +1,112 @@
 using Microsoft.AspNetCore.Mvc;
-using SchoolApi.Models;
 using SchoolApi.Models.Requests;
 using SchoolApi.Services;
 using SchoolApi.Validators;
 
 [ApiController]
 [Route("course-instances")]
-public class CourseInstanceController(ICourseInstanceService service):ControllerBase
+public class CourseInstanceController : ControllerBase
 {
-    private readonly ICourseInstanceService _service = service;
+    private readonly ICourseInstanceService _service;
 
-    [HttpGet]
-    public ActionResult<List<CourseInstance>> GetCourseInstances()
+    public CourseInstanceController(ICourseInstanceService service)
     {
-        return Ok(_service.GetCourseInstances());
+        _service = service;
     }
 
+    // GET ALL
     [HttpGet]
-    [Route("{id}")]
-    public ActionResult<CourseInstance?> GetCourseInstance(string id)
+    public async Task<ActionResult> GetAll()
     {
-        try{
-            CourseInstance? found = _service.GetCourseInstanceById(id);
-            if (found == null)
-            {
-                return NotFound($"Course instance with id {id} not found");
-            }
-            return Ok(found);
-        }
-        catch (ArgumentException)
-        {
-            return StatusCode(500,"An error occured while processing the request");
-        }
+        var instances = await _service.GetInstancesAsync();
+        return Ok(instances);
     }
 
+    // GET BY ID
+    [HttpGet("{id}")]
+    public async Task<ActionResult> GetById(string id)
+    {
+        var instance = await _service.GetInstanceByIdAsync(id);
+
+        if (instance == null)
+            return NotFound($"Course instance with id {id} not found");
+
+        return Ok(instance);
+    }
+
+    // GET BY COURSE ID
+    [HttpGet("course/{courseId}")]
+    public async Task<ActionResult> GetByCourse(string courseId)
+    {
+        var instances = await _service.GetInstancesByCourseIdAsync(courseId);
+
+        if (!instances.Any())
+            return NotFound($"No course instances found for course {courseId}");
+
+        return Ok(instances);
+    }
+
+    // CREATE
     [HttpPost]
-    public ActionResult<CourseInstance> CreateCourseInstance([FromBody]CreateCourseInstancesRequest request)
+    public async Task<ActionResult> Create([FromBody] CreateCourseInstanceRequest request)
     {
-        //check if the model state is valid
-        if(!ModelState.IsValid)
-        {
+        if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
-        }
 
-        //call the date validator to check if the start date is before the end date and if the dates are in the future
         var validator = new DateValidation(request.StartDate, request.EndDate);
         var errors = validator.Validate();
+
         if (errors.Any())
-        {
             return BadRequest(errors);
-        }
-        
+
         try
         {
-            CourseInstance newCourseInstance = _service.CreateCourseInstance(request);
-            return Created("/course-instances", newCourseInstance);
+            var created = await _service.CreateInstanceAsync(request);
+            return Created("/course-instances", created);
         }
-        catch (ArgumentException ex)
+        catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
-        catch (Exception)
-        {
-            return StatusCode(500,"An error occured while processing the request");
-        }
     }
 
-    [HttpPatch]
-    [Route("{id}")]
-    public ActionResult<CourseInstance?> UpdateCourseInstance(string id, [FromBody]UpdateCourseInstanceRequest request)
+    // UPDATE
+    [HttpPatch("{id}")]
+    public async Task<ActionResult> Update(string id, [FromBody] UpdateCourseInstanceRequest request)
     {
-        // Validate state
-        if(!ModelState.IsValid)
-            {
-                return ValidationProblem(ModelState);
-            }
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
 
-        // Validate dates -custome validator to check if the start date is before the end date and if the dates are in the future
         var validator = new DateValidation(request.StartDate, request.EndDate);
         var errors = validator.Validate();
-            if (errors.Any())
-            {
-                return BadRequest(errors);
-            }
-            
+
+        if (errors.Any())
+            return BadRequest(errors);
+
         try
         {
-            CourseInstance? updatedCourseInstance = _service.UpdateCourseInstanceDate(id, request);
-            if (updatedCourseInstance == null)
-            {
+            var updated = await _service.UpdateInstanceAsync(id, request);
+
+            if (updated == null)
                 return NotFound($"Course instance with id {id} not found");
-            }
-            return Ok(updatedCourseInstance);
+
+            return Ok(updated);
         }
-        catch (ArgumentException ex)
+        catch (Exception ex)
         {
             return BadRequest(ex.Message);
         }
-        catch (Exception)
-        {
-            return StatusCode(500,"An error occured while processing the request");
-        }
     }
 
-    [HttpDelete]
-    [Route("{id}")]
-    public ActionResult DeleteCourseInstance(string id)
+    // DELETE
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete(string id)
     {
-        try
-        {
-            CourseInstance? found = _service.GetCourseInstanceById(id);
-            if (found == null)
-            {
-                return NotFound($"Course instance with id {id} not found");
-            }
-            _service.DeleteCourseInstance(id);
-            return Ok();
-        }
-        catch (Exception)
-        {
-            return StatusCode(500,"An error occured while processing the request");
-        }
-    }
+        var deleted = await _service.DeleteInstanceAsync(id);
 
-    [HttpGet]
-    [Route("student/{studentId}")] 
-    public ActionResult<IEnumerable<CourseInstance>> GetByStudent(string studentId)
-    {
-        try
-        {
-            IEnumerable<CourseInstance> found = _service.GetByStudent(studentId);
-            
-            if (found == null || !found.Any())
-            {
-                return NotFound($"No course instances found for student with id {studentId}");
-            }
-            
-            return Ok(found);
-        }
-        catch (ArgumentException ex)
-        {
-            return StatusCode(500, $"An error occurred while processing the request: {ex.Message}");
-        }
-    }   
+        if (!deleted)
+            return NotFound($"Course instance with id {id} not found");
 
-    [HttpGet]
-    [Route("course/{courseId}")]
-    public ActionResult<IEnumerable<CourseInstance>> GetByCourse(string courseId)
-    {
-        try
-        {
-            IEnumerable<CourseInstance> found = _service.GetByCourse(courseId);
-            
-            if (found == null || !found.Any())
-            {
-                return NotFound($"No course instances found for course with id {courseId}");
-            }
-            
-            return Ok(found);
-        }
-        catch (ArgumentException ex)
-        {
-            return StatusCode(500, $"An error occurred while processing the request: {ex.Message}");
-        }
+        return Ok();
     }
 }

@@ -7,13 +7,16 @@ namespace SchoolApi.Controllers;
 
 [ApiController]
 [Route("courses")]
-
-public class CourseController(ICourseService service) : ControllerBase
+public class CourseController : ControllerBase
 {
-    private readonly ICourseService _service = service;
+    private readonly ICourseService _service;
 
+    public CourseController(ICourseService service)
+    {
+        _service = service;
+    }
 
-    //get(courses)
+    // GET /courses
     [HttpGet]
     public async Task<ActionResult<List<CourseResponse>>> GetCourses()
     {
@@ -28,79 +31,67 @@ public class CourseController(ICourseService service) : ControllerBase
         }
     }
 
-    // Get /courses/{id}
-    [HttpGet]
-    [Route("{id}")]
+    // GET /courses/{id}
+    [HttpGet("{id}")]
     public async Task<ActionResult<CourseResponse>> GetCourseById(string id)
     {
         try
         {
-            var course = _service.GetCourseByIdAsync(id);
-            if(course == null)
-            {
+            var course = await _service.GetCourseByIdAsync(id);
+            if (course == null)
                 return NotFound($"Course with id {id} not found");
-            }
+
             return Ok(course);
         }
-        catch (Exception)
+        catch
         {
-            return StatusCode(500,"An error occured while processing the request");
+            return StatusCode(500, "An error occurred while processing the request");
         }
     }
 
-    //Post /courses
+    // POST /courses
     [HttpPost]
-    public async Task<ActionResult<CourseResponse>> CreateCourse(
-        [FromBody]CreateCourseRequest request)
+    public async Task<ActionResult<CourseResponse>> CreateCourse([FromBody] CreateCourseRequest request)
     {
-        if(!ModelState.IsValid)
-        {
+        if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
-        }
+
         try
         {
             var course = await _service.CreateCourseAsync(request);
-            return Created("/courses", course);
+            return Created($"/courses/{course.CourseId}", course);
         }
-        catch (Exception)
+        catch
         {
-            return StatusCode(500,"An error occured while processing the request");
+            return StatusCode(500, "An error occurred while processing the request");
         }
     }
 
-    // Patch /courses/{id}
-    [HttpPatch]
-    [Route("{id}")]
-    public async Task<ActionResult<CourseResponse>> UpdateCourse(
-        string id,
-        [FromBody] UpdateCourseRequest request)
+    // PATCH /courses/{id}
+    [HttpPatch("{id}")]
+    public async Task<ActionResult<CourseResponse>> UpdateCourse(string id, [FromBody] UpdateCourseRequest request)
     {
-        // Validate id
-        if(string.IsNullOrEmpty(id))
-        {
+        if (string.IsNullOrWhiteSpace(id))
             return BadRequest("Id is required");
-        }
-        // Validate request body
-        if(!ModelState.IsValid)
-        {
+
+        if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
-        }
-        try        
+
+        try
         {
-            //Call service to update course
-            var updated = _service.UpdateCourseAsync(id, request);
-            if(updated == null) 
+            var updated = await _service.UpdateCourseAsync(id, request);
+            if (updated == null)
                 return NotFound($"Course with id {id} not found");
-            
+
             return Ok(updated);
         }
-        catch (Exception)
+        catch
         {
-             return StatusCode(500,"An error occured while processing the request");
+            return StatusCode(500, "An error occurred while processing the request");
         }
     }
 
-    //delete /courses/{id}
+    // DELETE /courses/{id}
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteCourse(string id)
     {
@@ -108,14 +99,13 @@ public class CourseController(ICourseService service) : ControllerBase
         {
             var deleted = await _service.DeleteCourseAsync(id);
             if (!deleted)
-                return NotFound($"Student with id {id} not found");
+                return NotFound($"Course with id {id} not found");
 
             return Ok();
-
         }
-        catch (Exception)
+        catch
         {
-            return StatusCode(500,"An error occured while processing the request");
+            return StatusCode(500, "An error occurred while processing the request");
         }
     }
 }

@@ -10,11 +10,13 @@ public static class CourseInstanceMapper
         return new CourseInstanceResponse
         {
             CourseInstanceId = ci.CourseInstanceId,
-            CourseId = ci.Course.CourseId,
-            CourseTitle = ci.Course.Title,
+            CourseId = ci.Course?.CourseId ?? string.Empty,
+            CourseTitle = ci.Course?.Title ?? string.Empty,
             StartDate = ci.StartDate,
             EndDate = ci.EndDate,
-            Students = ci.Students.Select(StudentMapper.ToResponse).ToList()
+            Students = (ci.Students ?? new List<Student>())
+                .Select(StudentMapper.ToResponse)
+                .ToList()
         };
     }
 }

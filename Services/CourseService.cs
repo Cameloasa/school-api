@@ -32,18 +32,22 @@ public class CourseService : ICourseService
         _courseRepository = repo;
     }
 
+
+    //get all
     public async Task<List<CourseResponse>> GetCoursesAsync()
     {
         var courses = await _courseRepository.GetCoursesAsync();
         return courses.Select(CourseMapper.ToResponse).ToList();
     }
 
+    // get by id
     public async Task<CourseResponse?> GetCourseByIdAsync(string id)
     {
         var course = await _courseRepository.GetCourseByIdAsync(id);
         return course is null ? null : CourseMapper.ToResponse(course);
     }
 
+    //create
     public async Task<CourseResponse> CreateCourseAsync(CreateCourseRequest request)
     {
         var course = new Course
@@ -56,6 +60,7 @@ public class CourseService : ICourseService
         return CourseMapper.ToResponse(created);
     }
 
+    //update
     public async Task<CourseResponse?> UpdateCourseAsync(string id, UpdateCourseRequest request)
     {
         var course = await _courseRepository.GetCourseByIdAsync(id);
@@ -70,6 +75,7 @@ public class CourseService : ICourseService
         return updated is null ? null : CourseMapper.ToResponse(updated);
     }
 
+    //delete
     public async Task<bool> DeleteCourseAsync(string id)
     {
         return await _courseRepository.DeleteCourseAsync(id);

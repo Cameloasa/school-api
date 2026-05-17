@@ -3,100 +3,60 @@ using SchoolApi.Models;
 
 namespace SchoolApi.Repositories;
 
+// =========================
+//      INTERFACE
+// =========================
 public interface IGradeRepository
 {
-    // CRUD 
-    bool AddGrade(Grade grade);
-    Grade? GetGradeById(string id);
-    IEnumerable<Grade> GetAllGrades();
-    Grade? UpdateGradeValue(string studentId, string courseId, string newValue);
-    bool DeleteGrade(string id);
-    
-    // Search specific
-    IEnumerable<Grade> GetGradesByStudentId(string studentId);     
-    IEnumerable<Grade> GetGradesByCourseId(string courseId);  
-    IEnumerable<Grade> GetGradesByCourseInstanceId(string courseInstanceId); 
-    IEnumerable<Grade> GetGradesByStudentAndCourseId(string studentId, string courseId); 
-    Grade? GetGradeByStudentAndCourseInstanceId(string studentId, string courseInstanceId);  
-}
+    Task<List<Grade>> GetGradesAsync();
+    Task<Grade?> GetGradeByIdAsync(string id);
+    Task<List<Grade>> GetGradesByStudentIdAsync(string studentId);
+    Task<List<Grade>> GetGradesByCourseInstanceIdAsync(string courseInstanceId);
 
+    Task<Grade> AddGradeAsync(Grade grade);
+    Task<Grade?> UpdateGradeAsync(Grade grade);
+    Task<bool> DeleteGradeAsync(string id);
+}
+// =========================
+//   EF CORE Implementation
+// =========================
 public class GradeRepository : IGradeRepository
 {
-    private List<Grade> grades;
-
-    public GradeRepository()
+    public Task<Grade> AddGradeAsync(Grade grade)
     {
-        grades = [];// grades = new List<Grade>(); empty list
+        throw new NotImplementedException();
     }
 
-    //create
-    public bool AddGrade(Grade grade)
+    public Task<bool> DeleteGradeAsync(string id)
     {
-        if (grade == null) return false;
-        grades.Add(grade); 
-        return true;
+        throw new NotImplementedException();
     }
 
-    // delete grade by ID
-    public bool DeleteGrade(string id)
+    public Task<Grade?> GetGradeByIdAsync(string id)
     {
-        var grade = GetGradeById(id);
-        if (grade == null) return false;
-        return grades.Remove(grade);
+        throw new NotImplementedException();
     }
 
-    // read all grades
-    public IEnumerable<Grade> GetAllGrades()
+    public Task<List<Grade>> GetGradesAsync()
     {
-        return grades;
+        throw new NotImplementedException();
     }
 
-    // read grade by ID
-    public Grade? GetGradeById(string id)
+    public Task<List<Grade>> GetGradesByCourseInstanceIdAsync(string courseInstanceId)
     {
-        return grades.FirstOrDefault(g => g.GradeId == id);
+        throw new NotImplementedException();
     }
 
-    // Search student + course instance
-    public Grade? GetGradeByStudentAndCourseInstanceId(string studentId, string courseInstanceId)
+    public Task<List<Grade>> GetGradesByStudentIdAsync(string studentId)
     {
-        return grades.FirstOrDefault(g => g.Student?.StudentId == studentId && 
-                                         g.CourseInstance?.CourseInstanceId == courseInstanceId);
+        throw new NotImplementedException();
     }
 
-    // all grades for a student
-    public IEnumerable<Grade> GetGradesByStudentId(string studentId)
+    public Task<Grade?> UpdateGradeAsync(Grade grade)
     {
-        return grades.Where(g => g.Student?.StudentId == studentId);
+        throw new NotImplementedException();
     }
-
-    // all grades for a course instance
-    public IEnumerable<Grade> GetGradesByCourseInstanceId(string courseInstanceId)
-    {
-        return grades.Where(g => g.CourseInstance?.CourseInstanceId == courseInstanceId);
-    }
-
-    // Update value of a grade for a student (assuming one grade per student per course instance)
-    public Grade? UpdateGradeValue(string studentId, string courseId, string newValue)
-    {
-        var existing = GetGradesByStudentAndCourseId(studentId, courseId).FirstOrDefault();
-        if (existing == null) return null;
-
-        existing.Value = newValue;
-        return existing;
-    }
-
-    // Search for grades by student and course (not instance)
-    public IEnumerable<Grade> GetGradesByStudentAndCourseId(string studentId, string courseId)
-    {
-        return grades.Where(g => g.Student?.StudentId == studentId && 
-                                 g.CourseInstance?.Course?.CourseId == courseId);
-    }
-
-    public IEnumerable<Grade> GetGradesByCourseId(string courseId)
-    {
-        return grades.Where(g => g.CourseInstance?.Course?.CourseId == courseId);
-    }
-
-    
 }
+
+
+

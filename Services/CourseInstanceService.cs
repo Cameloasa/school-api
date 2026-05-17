@@ -1,166 +1,133 @@
+
+using SchoolApi.Mappers;
 using SchoolApi.Models;
+using SchoolApi.Models.DTOs;
 using SchoolApi.Models.Requests;
 using SchoolApi.Repositories;
+using SchoolApi.Validators;
+
 namespace SchoolApi.Services;
 
+// =========================
+//      INTERFACE
+// =========================
 public interface ICourseInstanceService
 {
-    List<CourseInstance> GetCourseInstances();
-    CourseInstance? GetCourseInstanceById(string id);
-    CourseInstance CreateCourseInstance(CreateCourseInstancesRequest request);
-    CourseInstance? UpdateCourseInstanceDate(string id, UpdateCourseInstanceRequest request);
-    bool DeleteCourseInstance(string id);
-    IEnumerable<CourseInstance> GetByStudent(string studentId); 
-    IEnumerable<CourseInstance> GetByCourse(string courseId); 
-    IEnumerable<CourseInstance> GetByDateRange(DateTime start, DateTime end);
-}
+    Task<List<CourseInstanceResponse>> GetInstancesAsync();
+    Task<CourseInstanceResponse?> GetInstanceByIdAsync(string id);
+    Task<List<CourseInstanceResponse>> GetInstancesByCourseIdAsync(string courseId);
 
+    Task<CourseInstanceResponse> CreateInstanceAsync(CreateCourseInstanceRequest request);
+    Task<CourseInstanceResponse?> UpdateInstanceAsync(string id, UpdateCourseInstanceRequest request);
+    Task<bool> DeleteInstanceAsync(string id);
+}
+// =========================
+//      IMPLEMENTATION
+// =========================
 public class CourseInstanceService : ICourseInstanceService
 {
+    private readonly ICourseInstanceRepository _courseInstanceRepository;
     private readonly IStudentRepository _studentRepository;
     private readonly ICourseRepository _courseRepository;
-    private readonly ICourseInstanceRepository _courseInstanceRepository;
 
-    public CourseInstanceService(IStudentRepository studentRepo, 
-                                ICourseRepository courseRepo,
-                                ICourseInstanceRepository courseInstanceRepo)
+    public CourseInstanceService(
+        ICourseInstanceRepository instanceRepo,
+        IStudentRepository studentRepo,
+        ICourseRepository courseRepo)
     {
+        _courseInstanceRepository = instanceRepo;
         _studentRepository = studentRepo;
         _courseRepository = courseRepo;
-        _courseInstanceRepository = courseInstanceRepo;
-        
     }
 
-    //get all course instances
-    public List<CourseInstance> GetCourseInstances()
+    // create
+    public async Task<CourseInstanceResponse> CreateInstanceAsync(CreateCourseInstanceRequest request)
     {
-        try
+        // 1. course validation
+        var course = await _courseRepository.GetCourseByIdAsync(request.CourseId);
+        if (course == null)
+            throw new Exception("Course not found");
+
+        // 2. students
+        var students = await _studentRepository.GetStudentsByIdsAsync(request.StudentIds);
+
+        if (students.Count != request.StudentIds.Count)
+            throw new Exception("One or more students do not exist");
+
+        // 3. create instance 
+        var instance = new CourseInstance
         {
-            return _courseInstanceRepository.GetAllCourseInstances().ToList();
-        }
-        catch (Exception ex)    
-        {
-            throw new InvalidOperationException("An error occurred while retrieving course instances", ex);   
-        }
+            StartDate = request.StartDate,
+            EndDate = request.EndDate,
+            CourseId = request.CourseId,
+            Students = students 
+        };
+
+        // 4. save
+        var created = await _courseInstanceRepository.AddInstanceAsync(instance);
+
+        // 5. return DTO
+        return CourseInstanceMapper.ToResponse(created);
     }
 
-    //get course instance by id
-    public CourseInstance? GetCourseInstanceById(string id)
+    //delete
+    public async Task<bool> DeleteInstanceAsync(string id)
     {
-        try
-        {
-            // Validation
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                throw new ArgumentException("Course instance ID cannot be empty");
-            }
-            return _courseInstanceRepository.GetCourseInstanceById(id);
-        }
-        catch (ArgumentException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"An error occurred while retrieving course instance with ID {id}", ex);
-        }
+        return await _courseInstanceRepository.DeleteInstanceAsync(id);
     }
 
-    //create course instance
-    public CourseInstance CreateCourseInstance(CreateCourseInstancesRequest request)
+    //get by id
+    public async Task<CourseInstanceResponse?> GetInstanceByIdAsync(string id)
     {
-        try
-        {
-            // Validate course
-            Course? course = _courseRepository.GetCourseById(request.CourseId) ?? 
-            throw new ArgumentException($"Course with ID {request.CourseId} not found");
-
-            // Validate students
-            List<Student> students = [];
-            foreach (string studentId in request.StudentIds)
-            {
-                Student? student = _studentRepository.GetStudentById(studentId) 
-                ?? throw new ArgumentException($"Student with ID {studentId} not found");
-                students.Add(student);
-            }
-
-            CourseInstance newInstance = new (  request.StartDate, 
-                                                request.EndDate, 
-                                                course,
-                                                students);
-            // Save to repository
-            bool success = _courseInstanceRepository.AddCourseInstance(newInstance);
-            if (!success)
-            {
-                throw new InvalidOperationException("Failed to create course instance");
-            }
-            // Return the created instance
-            return newInstance;
-        }
-        catch (ArgumentException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException("An error occurred while creating the course instance", ex);
-        }
+        var instance = await _courseInstanceRepository.GetInstanceByIdAsync(id);
+        return instance is null? null: CourseInstanceMapper.ToResponse(instance);
     }
 
-    //update course instance
-    public CourseInstance? UpdateCourseInstanceDate(string id, UpdateCourseInstanceRequest request)
+    //get all
+    public async Task<List<CourseInstanceResponse>> GetInstancesAsync()
     {
-        try
-        {
-            
-            return _courseInstanceRepository.UpdateCourseInstanceDate(id, request.StartDate, request.EndDate);
-            
-        }
-        catch (ArgumentException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"An error occurred while updating course instance with ID {id}", ex);
-        }
-    }
-    //delete course instance
-    public bool DeleteCourseInstance(string id)
-    {
-        try
-        {
-            // Validation
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                throw new ArgumentException("Course instance ID cannot be empty");
-            }
-            
-            return _courseInstanceRepository.DeleteCourseInstance(id);
-        }
-        catch (ArgumentException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"An error occurred while deleting course instance with ID {id}", ex);
-        }
+        var instances = await _courseInstanceRepository.GetInstancesAsync();
+        return instances.Select(CourseInstanceMapper.ToResponse).ToList();
     }
 
-    //get course instances by student id
-    public IEnumerable<CourseInstance> GetByStudent(string studentId)
+    //get by course id
+    public async Task<List<CourseInstanceResponse>> GetInstancesByCourseIdAsync(string courseId)
     {
-        return _courseInstanceRepository.GetByStudentId(studentId);
+        var instances = await _courseInstanceRepository.GetInstancesByCourseIdAsync(courseId);
+
+        if (instances == null || instances.Count == 0)
+            return new List<CourseInstanceResponse>();
+
+        return instances
+            .Select(CourseInstanceMapper.ToResponse)
+            .ToList();
     }
 
-    public IEnumerable<CourseInstance> GetByCourse(string courseId)
+    //update
+    public async Task<CourseInstanceResponse?> UpdateInstanceAsync(string id, UpdateCourseInstanceRequest request)
     {
-        return _courseInstanceRepository.GetByCourseId(courseId);
+    
+        // 1. instance from db
+        var existing = await _courseInstanceRepository.GetInstanceByIdAsync(id);
+        if (existing == null)
+            return null;
+
+        // 2. date validation
+        var validator = new DateValidation(request.StartDate, request.EndDate);
+        var errors = validator.Validate();
+
+        if (errors.Any())
+            throw new Exception(string.Join(" | ", errors));
+
+        // 3. modify 
+        existing.StartDate = request.StartDate;
+        existing.EndDate = request.EndDate;
+
+        // 4. send to repo
+        var updated = await _courseInstanceRepository.UpdateInstanceAsync(existing);
+
+        // 5. Return DTO
+        return CourseInstanceMapper.ToResponse(updated!);
     }
 
-    public IEnumerable<CourseInstance> GetByDateRange(DateTime start, DateTime end)
-    {
-        return _courseInstanceRepository.GetByDateRange(start, end);
-    }
 }

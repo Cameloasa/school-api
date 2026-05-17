@@ -1,100 +1,100 @@
+using Microsoft.EntityFrameworkCore;
+using SchoolApi.Context;
 using SchoolApi.Models;
 
 namespace SchoolApi.Repositories;
+
+// =========================
+//      INTERFACE
+// =========================
 public interface ICourseInstanceRepository
 {
-    // CRUD operations
-    bool AddCourseInstance(CourseInstance courseInstance);
-    CourseInstance? GetCourseInstanceById(string id);
-    IEnumerable<CourseInstance> GetAllCourseInstances();
-    CourseInstance? UpdateCourseInstanceDate(string courseInstanceId, DateTime newStartDate, DateTime newEndDate);
-    bool DeleteCourseInstance(string id);
-    
-    // Specialized searches - optimized for DB
-    CourseInstance? GetActiveInstanceByCourseId(string courseId);
-    IEnumerable<CourseInstance> GetByStudentId(string studentId);      // WHERE StudentId = ?
-    IEnumerable<CourseInstance> GetByCourseId(string courseId);        // WHERE CourseId = ?
-    IEnumerable<CourseInstance> GetByDateRange(DateTime startDate, DateTime endDate); // BETWEEN
-   
-}
+    Task<List<CourseInstance>> GetInstancesAsync();
+    Task<CourseInstance?> GetInstanceByIdAsync(string id);
+    Task<CourseInstance> AddInstanceAsync(CourseInstance instance);
+    Task<CourseInstance?> UpdateInstanceAsync(CourseInstance instance);
+    Task<bool> DeleteInstanceAsync(string id);
 
+    // Extra (util):
+    Task<List<CourseInstance>> GetInstancesByCourseIdAsync(string courseId);
+}
+// =========================
+//   EF CORE Implementation
+// =========================
 public class CourseInstanceRepository : ICourseInstanceRepository
 {
 
-    // In-memory list to store course instances
-    private List<CourseInstance> courseInstances;
+    private readonly ApplicationDbContext _context;
 
-    // Constructor to initialize the repository with some sample data
-    public CourseInstanceRepository()
+    public CourseInstanceRepository(ApplicationDbContext context)
     {
-        courseInstances = [];
+        _context = context;
+    }
+    
+    //create
+    public async Task<CourseInstance> AddInstanceAsync(CourseInstance instance)
+    {
+         _context.CourseInstances.Add(instance);
+        await _context.SaveChangesAsync();
+        return instance;
     }
 
-    // Add a new course instance
-    public bool AddCourseInstance(CourseInstance courseInstance)
+    //delete
+    public async Task<bool> DeleteInstanceAsync(string id)
     {
-        if (courseInstance == null)return false;
+        var instance = await GetInstanceByIdAsync(id);
+        if(instance == null)
+            return false;
 
-        courseInstances.Add(courseInstance); return true;
+        _context.CourseInstances.Remove(instance);
+        await _context.SaveChangesAsync();
+        return true;
     }
 
-    // Delete a course instance by ID
-    public bool DeleteCourseInstance(string id)
+    //get by id
+    public async Task<CourseInstance?> GetInstanceByIdAsync(string id)
     {
-        var courseInstance = GetCourseInstanceById(id);
-        if (courseInstance == null) return false;
-        
-        return courseInstances.Remove(courseInstance);
+        return await 
+            _context
+            .CourseInstances
+            .Include(ci => ci.Course)
+            .Include(ci => ci.Students)
+            .Include(ci => ci.Grades)
+            .FirstOrDefaultAsync(ci => ci.CourseInstanceId == id);
     }
 
-    // get all active course instance by course id
-    public CourseInstance? GetActiveInstanceByCourseId(string courseId)
+    //get all
+    public async Task<List<CourseInstance>> GetInstancesAsync()
     {
-        var today = DateTime.UtcNow;
-
-        return GetByCourseId(courseId).FirstOrDefault(ci => ci.StartDate <= today && ci.EndDate >= today);
+        return await 
+            _context
+            .CourseInstances
+            .Include(ci => ci.Course)
+            .Include(ci => ci.Students)
+            .Include(ci => ci.Grades)
+            .ToListAsync();
     }
 
-    // Get all course instances
-    public IEnumerable<CourseInstance> GetAllCourseInstances()
+    //get by course id
+    public async Task<List<CourseInstance>> GetInstancesByCourseIdAsync(string courseId)
     {
-        return courseInstances;
+        return await 
+            _context
+            .CourseInstances
+            .Include(ci => ci.Course)
+            .Include(ci => ci.Students)
+            .Include(ci => ci.Grades)
+            .Where(ci => ci.CourseId == courseId)
+            .ToListAsync();
+
     }
 
-    // Get course instances by course ID
-    public IEnumerable<CourseInstance> GetByCourseId(string courseId)
+    //update 
+    public async Task<CourseInstance?> UpdateInstanceAsync(CourseInstance instance)
     {
-        return courseInstances.Where(ci => ci.Course?.CourseId == courseId);
-
-    }
-
-    // Get course instances by date range
-    public IEnumerable<CourseInstance> GetByDateRange(DateTime startDate, DateTime endDate)
-    {
-        return courseInstances.Where(ci => ci.StartDate <= endDate && ci.EndDate >= startDate);
-    }
-
-    // Get course instances by student ID
-    public IEnumerable<CourseInstance> GetByStudentId(string studentId)
-    {
-        return courseInstances.Where(ci => ci.Students.Any(s => s.StudentId == studentId));
-    }
-
-    // Get a course instance by ID
-    public CourseInstance? GetCourseInstanceById(string id)
-    {
-        return courseInstances.FirstOrDefault(ci => ci.CourseInstanceId == id);
-    }
-
-    // Update a course instance
-    public CourseInstance? UpdateCourseInstanceDate(string id, DateTime newStartDate, DateTime newEndDate)
-    {
-        CourseInstance? existing = GetCourseInstanceById(id);
-        if (existing == null) return null;
-        
-        existing.StartDate = newStartDate;
-        existing.EndDate = newEndDate;
-        return existing;
-        // save changes if using a real database context
+        _context.CourseInstances.Update(instance);
+        await _context.SaveChangesAsync();
+        return instance;
     }
 }
+

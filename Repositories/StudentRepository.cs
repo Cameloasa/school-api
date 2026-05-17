@@ -14,6 +14,8 @@ public interface IStudentRepository
     Task<List<Student>> GetStudentsAsync();
     Task<Student?> UpdateStudentAsync(Student student);
     Task<bool> DeleteStudentAsync(string id);
+    //(utils for instances)
+    Task<List<Student>> GetStudentsByIdsAsync(List<string> ids);
 }
 
 // =========================
@@ -59,6 +61,7 @@ public class StudentRepository : IStudentRepository
         return student;
     }
 
+    //delete
     public async Task<bool> DeleteStudentAsync(string id)
     {
         var student = await GetStudentByIdAsync(id);
@@ -68,6 +71,13 @@ public class StudentRepository : IStudentRepository
         _context.Students.Remove(student);
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<List<Student>> GetStudentsByIdsAsync(List<string> ids)
+    {
+        return await _context.Students
+            .Where(s => ids.Contains(s.StudentId))
+            .ToListAsync();
     }
 
 }

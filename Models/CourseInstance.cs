@@ -8,7 +8,7 @@ public class CourseInstance
     public DateTime EndDate { get; set; }
 
     public string CourseId { get; set; } = string.Empty;
-    public Course Course { get; set; }
+    public Course? Course { get; set; }
 
     public ICollection<Student> Students { get; set; } = new List<Student>();
     public ICollection<Grade> Grades { get; set; } = new List<Grade>();
